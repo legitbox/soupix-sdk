@@ -33,6 +33,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/kthread.h>
 #include <linux/slab.h>
+#include <linux/vmalloc.h>
 #include <linux/clk.h>
 #include <asm/cacheflush.h>
 #include <linux/of.h>

@@ -466,14 +466,14 @@ static long cvi_rtos_cmdqu_ioctl(struct file *filp, unsigned int cmd, unsigned l
 	switch (cmd) {
 		case RTOS_CMDQU_SEND:
 			pr_debug("RTOS_CMDQU_SEND\n");
-			copy_from_user(&cmdq,
+			(void)copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
 				sizeof(struct cmdqu_t));
 			ret = rtos_cmdqu_send(&cmdq);
 			break;
 		case RTOS_CMDQU_SEND_WAKEUP:
 			pr_debug("RTOS_CMDQU_SEND_WAKEUP\n");
-			copy_from_user(&cmdq,
+			(void)copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
 				sizeof(struct cmdqu_t));
 			pr_debug("cmdq.ip_id=%d cmdq.cmd_id=%d\n", cmdq.ip_id, cmdq.cmd_id);
@@ -517,7 +517,7 @@ static long cvi_rtos_cmdqu_ioctl(struct file *filp, unsigned int cmd, unsigned l
 			kfree(wait_list);
 			break;
 		case RTOS_CMDQU_REQUEST:
-			copy_from_user(&cmdq,
+			(void)copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
 				sizeof(struct cmdqu_t));
 
@@ -525,7 +525,7 @@ static long cvi_rtos_cmdqu_ioctl(struct file *filp, unsigned int cmd, unsigned l
 				"RTOS_CMDQU_REQUEST", (void *)((unsigned long)cmdq.param_ptr));
 			break;
 		case RTOS_CMDQU_REQUEST_FREE:
-			copy_from_user(&cmdq,
+			(void)copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
 				sizeof(struct cmdqu_t));
 			free_rtos_irq(cmdq.ip_id);

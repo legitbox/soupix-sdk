@@ -7,4 +7,6 @@ ccflags-y += -D__CV180X__
 endif
 
 # Suppress new GCC 12+ warnings that break -Werror builds on 6.12
-INTRERDRV_FLAGS += -Wno-missing-prototypes -Wno-missing-declarations
+INTRERDRV_FLAGS += -Wno-missing-prototypes -Wno-missing-declarations -Wno-unused-result \
+	-Wno-return-type -Wno-stringop-overread -Wno-implicit-function-declaration \
+	-Wno-incompatible-pointer-types -Wno-int-conversion

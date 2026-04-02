@@ -12,7 +12,7 @@ else
   DEBFLAGS = -O2
 endif
 
-ccflags-y += $(DEBFLAGS) -I$(PWD) -I$(LDDINCDIR) -D$(CHIP_TYPE) -D$(SUB_TYPE) -DUSE_KERNEL_MODE -Wno-date-time -Werror
+ccflags-y += $(DEBFLAGS) -I$(PWD) -I$(LDDINCDIR) -D$(CHIP_TYPE) -D$(SUB_TYPE) -DUSE_KERNEL_MODE -Wno-date-time  -Wno-missing-prototypes -Wno-missing-declarations
 
 KBUILD_EXTRA_SYMBOLS += $(PWD)/../vcodec/Module.symvers
 

@@ -14,7 +14,7 @@ extern "C" {
 
 #define MUTEX_INIT(MUTEX_HANDLE, ATTR) mutex_init(MUTEX_HANDLE)
 #define MUTEX_DESTROY(MUTEX_HANDLE) mutex_destroy(MUTEX_HANDLE)
-#define MUTEX_LOCK(MUTEX_HANDLE) mutex_lock_interruptible(MUTEX_HANDLE)
+#define MUTEX_LOCK(MUTEX_HANDLE) mutex_lock(MUTEX_HANDLE)
 #define MUTEX_UNLOCK(MUTEX_HANDLE) mutex_unlock(MUTEX_HANDLE)
 #define MEM_MALLOC(SIZE) vmalloc(SIZE)
 #define MEM_CALLOC(NUMBER, SIZE) vzalloc(SIZE * NUMBER)

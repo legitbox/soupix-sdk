@@ -1,13 +1,22 @@
 #ifndef _HEVC_ENC_RC_H_
+#ifndef MAX_GOP_SIZE
+#define MAX_GOP_SIZE 16
+#endif
 #define _HEVC_ENC_RC_H_
 
 #include "util_float.h"
 
+#ifndef MAX
 #define MAX_GOP_SIZE 8
+#endif
 #define PARA_CHANGE_RC_SEQ_INIT
 
+#ifndef MAX
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#endif
 #define CLIP3(a, b, c) (MIN(b, MAX(a, c)))
 #define ABS(a) ((a >= 0) ? a : -a)
 

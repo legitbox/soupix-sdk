@@ -247,13 +247,12 @@ static void _disp_sel_pinmux(enum cvi_disp_intf intf_type, void *param)
 
 void _disp_ctrlpin_set(unsigned int gpio_num, enum GPIO_ACTIVE_E active)
 {
-	enum of_gpio_flags flags;
 	static int count;
 	char name[16] = "";
 	int rc = 0;
 
 	if (gpio_is_valid(gpio_num)) {
-		flags = GPIOF_DIR_OUT | (active ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW);
+//		
 		snprintf(name, sizeof(name), "disp_ctrl_pin_%d", count++);
 		rc = devm_gpio_request_one(&g_pdev->dev, gpio_num, flags, name);
 		if (rc) {
@@ -266,11 +265,10 @@ void _disp_ctrlpin_set(unsigned int gpio_num, enum GPIO_ACTIVE_E active)
 
 static void _disp_resetpin_set(unsigned int gpio_num, enum GPIO_ACTIVE_E active)
 {
-	enum of_gpio_flags flags;
 	int rc = 0;
 
 	if (gpio_is_valid(gpio_num)) {
-		flags = GPIOF_DIR_OUT | (active ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW);
+//		
 		rc = devm_gpio_request_one(&g_pdev->dev, gpio_num, flags, NULL);
 		if (rc) {
 			CVI_TRACE_VO(CVI_DBG_ERR, "reset gpio_num(%d) failed\n",  gpio_num);
@@ -1292,7 +1290,7 @@ int vo_create_thread(struct cvi_vo_dev *vdev, enum E_VO_TH th_id)
 		CVI_TRACE_VO(CVI_DBG_ERR, "_vo_create_thread fail\n");
 		return -1;
 	}
-	param.sched_priority = MAX_USER_RT_PRIO - 10;
+	param.sched_priority = MAX_RT_PRIO - 10;
 
 	if (vdev->vo_th[th_id].w_thread == NULL) {
 		switch (th_id) {

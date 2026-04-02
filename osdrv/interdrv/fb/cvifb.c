@@ -657,7 +657,7 @@ int cvifb_probe(struct platform_device *pdev)
 	info->fix.mmio_len = par->reg_len;
 	info->fix.smem_start = par->mem_base;
 	info->fix.smem_len = par->mem_len;
-	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
+	info->flags = 0 | FBINFO_HWACCEL_YPAN;
 
 	info->var.activate = FB_ACTIVATE_NOW;
 	info->var.bits_per_pixel = 8;

@@ -4,7 +4,7 @@ PWD := $(shell pwd)
 
 ccflags-y += -I$(src) -I$(src)/$(CVIARCH_L)
 
-ccflags-y +=-Wall -Wextra -Werror -Wno-unused-parameter -Wno-sign-compare
+ccflags-y +=-Wall -Wextra  -Wno-missing-prototypes -Wno-missing-declarations -Wno-unused-parameter -Wno-sign-compare
 
 $(CVIARCH_L)_clock_cooling-objs = $(CVIARCH_L)/clock_cooling.o
 

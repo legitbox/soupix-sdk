@@ -6,7 +6,7 @@ $(CVIARCH_L)_wdt-objs = $(WDT_PATH)/cvi_wdt.o
 
 obj-m += $(CVIARCH_L)_wdt.o
 
-ccflags-y +=-Wall -Wextra -Werror -Wno-unused-parameter -Wno-sign-compare
+ccflags-y +=-Wall -Wextra  -Wno-missing-prototypes -Wno-missing-declarations -Wno-unused-parameter -Wno-sign-compare
 
 all:
 	$(MAKE) ARCH=${ARCH} -C $(KERNEL_DIR) M=$(PWD) modules

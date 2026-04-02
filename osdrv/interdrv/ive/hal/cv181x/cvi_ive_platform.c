@@ -12,6 +12,7 @@
  */
 
 #include <linux/delay.h>
+#include <linux/vmalloc.h>
 #include <linux/interrupt.h>
 #include <linux/string.h>
 #include <linux/timer.h>

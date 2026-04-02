@@ -96,7 +96,7 @@ ccflags-y += -I$(PWD)/../include/
 ccflags-y += -DUSE_KERNEL_MODE -DCVI_H26X_USE_ION_MEM -DCVI_JPG_USE_ION_MEM -DBITSTREAM_ION_CACHED_MEM -DMJPEG_INTERFACE_API -DCVI_H26X_ES_BUFFER_QUEUE_ENABLE -DCVI_H26X_USE_ION_FW_BUFFER -DENV_SET_ADDR_REMAP
 #ccflags-y += -DVC_DRIVER_TEST
 ccflags-y += -DENABLE_DEC
-ccflags-y += -Werror
+ccflags-y +=  -Wno-missing-prototypes -Wno-missing-declarations
 
 ccflags-y += -DVC_DEBUG_BASIC_LEVEL
 

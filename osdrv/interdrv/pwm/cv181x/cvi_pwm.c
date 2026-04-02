@@ -172,7 +172,7 @@ static int pwm_cv_set_polarity(struct pwm_chip *chip,
 	struct cv_pwm_chip *our_chip = to_cv_pwm_chip(chip);
 
 	if (our_chip->no_polarity) {
-		dev_err(chip->dev, "no polarity\n");
+		dev_err(&chip->dev, "no polarity\n");
 		return -ENOTSUPP;
 	}
 
@@ -197,24 +197,24 @@ static int pwm_cv_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 
 	ret = pwm_cv_config(chip, pwm, state->duty_cycle, state->period);
 	if (ret) {
-		dev_err(chip->dev, "pwm apply err\n");
+		dev_err(&chip->dev, "pwm apply err\n");
 		return ret;
 	}
 
 	ret = pwm_cv_set_polarity(chip, pwm, state->polarity);
 	if (ret) {
-		dev_err(chip->dev, "pwm apply err\n");
+		dev_err(&chip->dev, "pwm apply err\n");
 		return ret;
 	}
 
-	dev_dbg(chip->dev, "pwm_cv_apply state->enabled = %d\n", state->enabled);
+	dev_dbg(&chip->dev, "pwm_cv_apply state->enabled = %d\n", state->enabled);
 	if (state->enabled)
 		ret = pwm_cv_enable(chip, pwm);
 	else
 		pwm_cv_disable(chip, pwm);
 
 	if (ret) {
-		dev_err(chip->dev, "pwm apply failed\n");
+		dev_err(&chip->dev, "pwm apply failed\n");
 		return ret;
 	}
 	return ret;
@@ -269,13 +269,7 @@ static int pwm_cv_capture(struct pwm_chip *chip, struct pwm_device *pwm_dev,
 static const struct pwm_ops pwm_cv_ops = {
 	.request	= pwm_cv_request,
 	.free		= pwm_cv_free,
-	.enable		= pwm_cv_enable,
-	.disable	= pwm_cv_disable,
-	.config		= pwm_cv_config,
-	.set_polarity	= pwm_cv_set_polarity,
-	/*.apply		= pwm_cv_apply,*/
-	.capture	= pwm_cv_capture,
-	.owner		= THIS_MODULE,
+	.apply		= pwm_cv_apply,
 };
 
 static const struct of_device_id cv_pwm_match[] = {
@@ -297,9 +291,7 @@ static int pwm_cv_probe(struct platform_device *pdev)
 	if (chip == NULL)
 		return -ENOMEM;
 
-	chip->chip.dev = &pdev->dev;
 	chip->chip.ops = &pwm_cv_ops;
-	chip->chip.base = -1;
 	chip->polarity_mask = 0;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);

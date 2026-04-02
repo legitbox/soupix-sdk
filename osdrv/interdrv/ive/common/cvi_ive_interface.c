@@ -24,6 +24,7 @@
 #endif
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
+#include <linux/vmalloc.h>
 
 #include "cvi_ive_interface.h"
 #include "cvi_ive_platform.h"

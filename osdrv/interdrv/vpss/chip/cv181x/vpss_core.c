@@ -881,7 +881,7 @@ img_unlock:
 job_unlock:
 	spin_unlock_irqrestore(&idev->job_lock, flags_job);
 
-	return -1;
+	return;
 }
 
 /**
@@ -998,7 +998,7 @@ u32 cvi_sc_cfg_cb(struct sc_cfg_cb *post_para, struct cvi_vip_dev *dev)
 	u8 grp_id = post_para->snr_num;
 
 	if (!dev)
-		return -1;
+		return;
 
 	for (i = 0; i < CVI_VIP_IMG_MAX; ++i)
 		if (dev->img_vdev[i].is_online_from_isp) {
@@ -1372,13 +1372,13 @@ static int _get_reserved_mem(struct platform_device *pdev,
 
 	if (!pdev) {
 		dev_err(&pdev->dev, "[VIP] null pointer\n");
-		return -EINVAL;
+		return;
 	}
 
 	target = of_parse_phandle(pdev->dev.of_node, "memory-region", 0);
 	if (!target) {
 		dev_err(&pdev->dev, "[VIP] No %s specified\n", "memory-region");
-		return -EINVAL;
+		return;
 	}
 
 	prmem = of_reserved_mem_lookup(target);
@@ -1386,7 +1386,7 @@ static int _get_reserved_mem(struct platform_device *pdev,
 
 	if (!prmem) {
 		dev_err(&pdev->dev, "[VIP]: cannot acquire memory-region\n");
-		return -EINVAL;
+		return;
 	}
 
 	CVI_TRACE_VPSS(CVI_DBG_INFO, "pool name = %s, size = 0x%llx, base = 0x%llx\n",
@@ -1415,14 +1415,14 @@ static int _init_resources(struct platform_device *pdev)
 	dev = dev_get_drvdata(&pdev->dev);
 	if (!dev) {
 		dev_err(&pdev->dev, "Can not get cvi_vip drvdata\n");
-		return -EINVAL;
+		return;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(reg_base); ++i) {
 		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
 		if (!res) {
 			CVI_TRACE_VPSS(CVI_DBG_ERR, "Failed to get res[%d]\n", i);
-			return -EINVAL;
+			return;
 		}
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 		reg_base[i] = devm_ioremap(&pdev->dev, res->start,
@@ -1435,7 +1435,7 @@ static int _init_resources(struct platform_device *pdev)
 			i, res->start, res->end, reg_base[i]);
 		if (!reg_base[i]) {
 			CVI_TRACE_VPSS(CVI_DBG_ERR, "Failed to get reg_base[%d]\n", i);
-			return -EINVAL;
+			return;
 		}
 	}
 	sclr_set_base_addr(reg_base[0]);
@@ -1666,7 +1666,7 @@ static int cvi_vpss_probe(struct platform_device *pdev)
 		 "CVI_VIP_SCL", dev)) {
 		dev_err(&pdev->dev, "Unable to request scl IRQ(%d)\n",
 				dev->irq_num_scl);
-		return -EINVAL;
+		return;
 	}
 
 #if defined(CONFIG_SCLR_TEST)
@@ -1677,7 +1677,7 @@ static int cvi_vpss_probe(struct platform_device *pdev)
 	/* scaler register cb */
 	if (vpss_core_register_cb(dev)) {
 		dev_err(&pdev->dev, "Failed to register vpss cb, err %d\n", rc);
-		return -EINVAL;
+		return;
 	}
 
 	vpss_init(dev);
@@ -1708,7 +1708,7 @@ static void cvi_vpss_remove(struct platform_device *pdev)
 
 	if (!pdev) {
 		dev_err(&pdev->dev, "invalid param");
-		return -EINVAL;
+		return;
 	}
 
 	/* scaler rm cb */
@@ -1719,7 +1719,7 @@ static void cvi_vpss_remove(struct platform_device *pdev)
 	dev = dev_get_drvdata(&pdev->dev);
 	if (!dev) {
 		dev_err(&pdev->dev, "Can not get cvi_vpss drvdata");
-		return -EINVAL;
+		return;
 	}
 
 #if defined(CONFIG_SCLR_TEST)
@@ -1753,7 +1753,7 @@ static int vpss_core_resume(struct device *dev)
 		 "CVI_VIP_SCL", vdev)) {
 		dev_err(&pdev->dev, "Unable to request scl IRQ(%d)\n",
 				vdev->irq_num_scl);
-		return -EINVAL;
+		return;
 	}
 	vpss_resume();
 	return 0;

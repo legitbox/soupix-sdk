@@ -2377,7 +2377,7 @@ static int cif_reset_snsr_gpio(struct cvi_cif_dev *dev,
 		return -EINVAL;
 
 	link = &dev->link[devno];
-	reset = (link->snsr_rst_pol == OF_GPIO_ACTIVE_LOW) ? 0 : 1;
+	reset = (link->snsr_rst_pol == GPIOF_ACTIVE_LOW) ? 0 : 1;
 
 	if (!gpio_is_valid(link->snsr_rst_pin))
 		return 0;
@@ -3201,7 +3201,7 @@ static int dbg_hdler(struct cvi_cif_dev *dev, char const *input)
 		link = &dev->link[a];
 		ctx = &link->cif_ctx;
 
-		reset = (link->snsr_rst_pol == OF_GPIO_ACTIVE_LOW) ? 0 : 1;
+		reset = (link->snsr_rst_pol == GPIOF_ACTIVE_LOW) ? 0 : 1;
 
 		if (!gpio_is_valid(link->snsr_rst_pin))
 			return 0;
