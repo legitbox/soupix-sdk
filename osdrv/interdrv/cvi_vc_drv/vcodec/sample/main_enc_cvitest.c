@@ -1037,7 +1037,7 @@ static int initEncOneFrame(stTestEncoder *pTestEnc, TestEncConfig *pEncConfig)
 			CVI_VC_ERR("WaitEncodeDone task error!\n");
 			return RETCODE_FAILURE;
 		}
-		sched_setscheduler(pTestEnc->tPthreadId, SCHED_FIFO, &param);
+		sched_set_fifo(pTestEnc->tPthreadId);
 	}
 
 	return INIT_TEST_ENCODER_OK;
@@ -6421,7 +6421,7 @@ int cvitest_venc_main(int argc, char **argv)
 			ret = 0;
 			goto BAILOUT;
 		}
-		sched_setscheduler(thread_id[i], SCHED_RR, &param);
+		sched_set_fifo(thread_id[i]);
 	}
 
 	for (i = 0; i < gNumInstance; i++) {

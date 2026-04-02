@@ -1091,7 +1091,7 @@ CVI_S32 CVI_VDEC_SendStream(VDEC_CHN VdChn, const VDEC_STREAM_S *pstStream,
 		pVbCtx->currBindMode = CVI_TRUE;
 		pVbCtx->thread = kthread_run(vdec_event_handler,
 				(CVI_VOID *) pChnHandle, "vdec_handler%d", VdChn);
-		sched_setscheduler(pVbCtx->thread, SCHED_RR, &param);
+		sched_set_fifo(pVbCtx->thread);
 	}
 
 

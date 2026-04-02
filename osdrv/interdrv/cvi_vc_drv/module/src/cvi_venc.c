@@ -3100,7 +3100,7 @@ CVI_S32 CVI_VENC_StartRecvFrame(VENC_CHN VeChn,
 					VeChn);
 				return CVI_FAILURE;
 			}
-			sched_setscheduler(pVbCtx->thread, SCHED_RR, &param);
+			sched_set_fifo(pVbCtx->thread);
 			SEMA_POST(&pChnVars->sem_send);
 		}
 	}
@@ -6951,7 +6951,7 @@ CVI_S32 cvi_VENC_CB_SendFrame(CVI_S32 VpssGrp, CVI_S32 VpssChn, CVI_S32 VpssChn1
 						priChn);
 					goto SBM_CB_FAILURE;
 				}
-				sched_setscheduler(pSbmHandle->pSBMSendFrameThread, SCHED_RR, &param);
+				sched_set_fifo(pSbmHandle->pSBMSendFrameThread);
 			}
 		}
 

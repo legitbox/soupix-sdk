@@ -5137,7 +5137,7 @@ static void vpss_start_handler(void)
 			pr_err("failed to create vpss kthread, u8VpssDev=%d\n", u8VpssDev);
 		}
 
-		ret = sched_setscheduler(handler_ctx[u8VpssDev].thread, SCHED_FIFO, &tsk);
+		sched_set_fifo(handler_ctx[u8VpssDev].thread);
 		if (ret)
 			pr_warn("vpss thread priority update failed: %d\n", ret);
 		CVI_TRACE_VPSS(CVI_DBG_WARN, "handler for dev(%d) started", u8VpssDev);

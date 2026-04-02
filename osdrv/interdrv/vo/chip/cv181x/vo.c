@@ -1106,7 +1106,7 @@ static int _vo_disp_thread(void *arg)
 			pr_info("%s exit\n", vdev->vo_th[th_id].th_name);
 			atomic_set(&vdev->vo_th[th_id].thread_exit, 1);
 			gVoCtx->bVideoFrameValid = CVI_FALSE;
-			do_exit(1);
+			kthread_complete_and_exit(NULL, 1);
 		}
 #ifdef VO_PROFILE
 		_vo_update_chnRealFrameRate(&gVoCtx->chnStatus[chn.s32DevId][chn.s32ChnId]);
@@ -1225,7 +1225,7 @@ static int _vo_disp_thread(void *arg)
 			pr_info("%s exit\n", vdev->vo_th[th_id].th_name);
 			atomic_set(&vdev->vo_th[th_id].thread_exit, 1);
 			gVoCtx->bVideoFrameValid = CVI_FALSE;
-			do_exit(1);
+			kthread_complete_and_exit(NULL, 1);
 		}
 
 		vb_dqbuf(chn, CHN_TYPE_IN, &blk);
@@ -1311,7 +1311,7 @@ int vo_create_thread(struct cvi_vo_dev *vdev, enum E_VO_TH th_id)
 			CVI_TRACE_VO(CVI_DBG_ERR, "Unable to start %s.\n", vdev->vo_th[th_id].th_name);
 			return -1;
 		}
-		sched_setscheduler(vdev->vo_th[th_id].w_thread, SCHED_FIFO, &param);
+		sched_set_fifo(vdev->vo_th[th_id].w_thread);
 		vdev->vo_th[th_id].flag = 0;
 		atomic_set(&vdev->vo_th[th_id].thread_exit, 0);
 		init_waitqueue_head(&vdev->vo_th[th_id].wq);

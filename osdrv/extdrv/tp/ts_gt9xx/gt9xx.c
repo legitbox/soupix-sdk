@@ -2379,7 +2379,7 @@ Output:
     Executive outcomes.
         0: succeed.
 *******************************************************/
-static int goodix_ts_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int goodix_ts_probe(struct i2c_client *client)
 {
     s32 ret = -1;
     struct goodix_ts_data *ts;
@@ -2538,7 +2538,7 @@ Input:
 Output:
     Executive outcomes. 0---succeed.
 *******************************************************/
-static int goodix_ts_remove(struct i2c_client *client)
+static void goodix_ts_remove(struct i2c_client *client)
 {
     struct goodix_ts_data *ts = i2c_get_clientdata(client);
 
@@ -2573,7 +2573,7 @@ static int goodix_ts_remove(struct i2c_client *client)
     input_unregister_device(ts->input_dev);
     kfree(ts);
 
-    return 0;
+    
 }
 
 
@@ -3042,7 +3042,7 @@ static const struct i2c_device_id goodix_ts_id[] = {
 
 static struct i2c_driver goodix_ts_driver = {
     .probe      = goodix_ts_probe,
-    .remove_new     = goodix_ts_remove,
+    .remove     = goodix_ts_remove,
     .id_table   = goodix_ts_id,
     .driver = {
         .name     = GTP_I2C_NAME,

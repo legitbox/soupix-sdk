@@ -5603,7 +5603,7 @@ thread_return rtw_xmit_thread(thread_context context)
 #ifdef PLATFORM_LINUX
 	struct sched_param param = { .sched_priority = 1 };
 
-	sched_setscheduler(current, SCHED_FIFO, &param);
+	sched_set_fifo(current);
 #endif /* PLATFORM_LINUX */
 #endif /* RTW_XMIT_THREAD_HIGH_PRIORITY */
 

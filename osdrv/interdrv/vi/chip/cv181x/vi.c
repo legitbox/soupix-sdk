@@ -4716,7 +4716,7 @@ int vi_create_thread(struct cvi_vi_dev *vdev, enum E_VI_TH th_id)
 			return -1;
 		}
 
-		sched_setscheduler(vdev->vi_th[th_id].w_thread, SCHED_FIFO, &param);
+		sched_set_fifo(vdev->vi_th[th_id].w_thread);
 
 		vdev->vi_th[th_id].flag = 0;
 		atomic_set(&vdev->vi_th[th_id].thread_exit, 0);
@@ -6611,7 +6611,7 @@ static int _vi_event_handler_thread(void * arg)
 		if (kthread_should_stop()) {
 			pr_info("%s exit\n", vdev->vi_th[th_id].th_name);
 			atomic_set(&vdev->vi_th[th_id].thread_exit, 1);
-			do_exit(1);
+			kthread_complete_and_exit(NULL, 1);
 		}
 
 		if (!ret) {
@@ -7221,7 +7221,7 @@ static int _vi_err_handler_thread(void *arg)
 		if (kthread_should_stop()) {
 			pr_info("%s exit\n", vdev->vi_th[th_id].th_name);
 			atomic_set(&vdev->vi_th[th_id].thread_exit, 1);
-			do_exit(1);
+			kthread_complete_and_exit(NULL, 1);
 		}
 
 		_vi_err_handler(vdev, err_raw_num);
@@ -7544,7 +7544,7 @@ static int _vi_preraw_thread(void *arg)
 		if (kthread_should_stop()) {
 			pr_info("%s exit\n", vdev->vi_th[th_id].th_name);
 			atomic_set(&vdev->vi_th[th_id].thread_exit, 1);
-			do_exit(1);
+			kthread_complete_and_exit(NULL, 1);
 		}
 
 		spin_lock_irqsave(&raw_num_lock, flags);
@@ -7641,7 +7641,7 @@ static int _vi_vblank_handler_thread(void *arg)
 		if (kthread_should_stop()) {
 			pr_info("%s exit\n", vdev->vi_th[th_id].th_name);
 			atomic_set(&vdev->vi_th[th_id].thread_exit, 1);
-			do_exit(1);
+			kthread_complete_and_exit(NULL, 1);
 		}
 
 		_isp_snr_cfg_deq_and_fire(vdev, raw_num, 1);
@@ -7770,7 +7770,7 @@ static int _vi_run_tpu_thread(void *arg)
 		if (kthread_should_stop()) {
 			pr_info("%s exit\n", vdev->vi_th[th_id].th_name);
 			atomic_set(&vdev->vi_th[th_id].thread_exit, 1);
-			do_exit(1);
+			kthread_complete_and_exit(NULL, 1);
 		}
 
 		ai_isp_handle_process(vdev, raw_num);

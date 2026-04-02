@@ -64,11 +64,11 @@ sed -i 's/"ISP_BRANCH": ""/"ISP_BRANCH": "'"${ISP_BRANCH}"'"/g' ${DEVICE_FILE}
 
 #generate pqtool_definition.json
 cd ${CUR_PATH}
-python hFile2json.py  $LEVELJSON $LAYOUTJSON $RPCJSON $HEADERLIST
+python3 hFile2json.py  $LEVELJSON $LAYOUTJSON $RPCJSON $HEADERLIST
 git checkout ${DEVICE_FILE}
 
 #check json file validity
-cat ${OUTPUT} | python -m json.tool 1>/dev/null 2>json_error
+cat ${OUTPUT} | python3 -m json.tool 1>/dev/null 2>json_error
 error=$(cat json_error)
 if [ ${#error} -eq 0 ]
 then

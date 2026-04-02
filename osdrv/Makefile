@@ -48,7 +48,7 @@ exclude_dirs = ./interdrv/include
 SUBDIRS := $(filter-out $(exclude_dirs), $(SUBDIRS))
 
 # prepare ko list
-KO_LIST = base vcodec jpeg pwm rtc wdt tpu mon clock_cooling saradc wiegand wiegand-gpio
+KO_LIST = base vcodec jpeg pwm rtc wdt tpu mon clock_cooling saradc wiegand
 
 ifneq ($(CONFIG_USB_OSDRV_CVITEK_GADGET),)
 KO_LIST += usb
@@ -83,10 +83,11 @@ KO_LIST += wireless
 OTHERS += cp_ext_wireless
 endif
 
-ifeq (, ${CONFIG_NO_TP})
-	KO_LIST += tp
-	OTHERS += cp_ext_tp
-endif
+# Disabled: tp (touchscreen), gyro, motor not needed for Duo S
+#ifeq (, ${CONFIG_NO_TP})
+#	KO_LIST += tp
+#	OTHERS += cp_ext_tp
+#endif
 
 export CROSS_COMPILE=$(patsubst "%",%,$(CONFIG_CROSS_COMPILE_KERNEL))
 export ARCH=$(patsubst "%",%,$(CONFIG_ARCH))

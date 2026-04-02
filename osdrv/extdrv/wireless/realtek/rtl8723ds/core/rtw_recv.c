@@ -4872,7 +4872,7 @@ thread_return rtw_recv_thread(thread_context context)
 #else
 	struct sched_param param = { .sched_priority = 1 };
 				
-	sched_setscheduler(current, SCHED_FIFO, &param);
+	sched_set_fifo(current);
 #endif
 #endif /* PLATFORM_LINUX */
 #endif /*RTW_RECV_THREAD_HIGH_PRIORITY*/
