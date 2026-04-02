@@ -697,7 +697,7 @@ err_deregister_misc:
     return ret; // Return the error code
 }
 
-static int cvi_rtos_cmdqu_remove(struct platform_device *pdev)
+static void cvi_rtos_cmdqu_remove(struct platform_device *pdev)
 {
 	struct cvi_rtos_cmdqu_device *ndev = platform_get_drvdata(pdev);
 	struct device *misc_dev;
@@ -720,7 +720,6 @@ static int cvi_rtos_cmdqu_remove(struct platform_device *pdev)
 	rtos_cmdqu_deinit();
 	pr_debug("%s DONE\n", __func__); // Use dev_dbg or pr_info if appropriate
 
-	return 0;
 }
 
 static const struct of_device_id cvi_rtos_cmdqu_match[] = {
@@ -730,7 +729,7 @@ static const struct of_device_id cvi_rtos_cmdqu_match[] = {
 
 static struct platform_driver cvi_rtos_cmdqu_driver = {
 	.probe = cvi_rtos_cmdqu_probe,
-	.remove = cvi_rtos_cmdqu_remove,
+	.remove_new = cvi_rtos_cmdqu_remove,
 	.driver = {
 		.owner = THIS_MODULE,
 		.name = RTOS_CMDQU_DEV_NAME,
@@ -751,7 +750,7 @@ static int cvi_rtos_cmdqu_init(void)
 {
 	int rc;
 	pr_debug("cvi_rtos_cmdqu_init");
-	pbase_class = class_create(THIS_MODULE, RTOS_CMDQU_DEV_NAME);
+	pbase_class = class_create(RTOS_CMDQU_DEV_NAME);
 	if (IS_ERR(pbase_class)) {
 		pr_err("create class failed\n");
 		rc = PTR_ERR(pbase_class);

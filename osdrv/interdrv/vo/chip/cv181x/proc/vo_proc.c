@@ -294,8 +294,8 @@ static int _vo_proc_show(struct seq_file *m, void *v)
 		return -1;
 	}
 
-#if 0//TODO: UTS_VERSION
-	seq_printf(m, "\nModule: [VO], Build Time[%s]\n", UTS_VERSION);
+#if 0//TODO: "soupix-sdk 6.12"
+	seq_printf(m, "\nModule: [VO], Build Time[%s]\n", "soupix-sdk 6.12");
 #endif
 	// Device Config
 	seq_puts(m, "\n-------------------------------DEVICE CONFIG------------------------------\n");
@@ -424,7 +424,7 @@ static int _vo_proc_show(struct seq_file *m, void *v)
 
 static int _vo_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, _vo_proc_show, PDE_DATA(inode));
+	return single_open(file, _vo_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))

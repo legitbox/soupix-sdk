@@ -1560,7 +1560,7 @@ static struct sdio_driver bl_sdio_drv = {
     .name     = KBUILD_MODNAME,
     .id_table = bl_sdio_ids,
     .probe    = bl_sdio_probe,
-    .remove   = bl_sdio_remove
+    .remove_new   = bl_sdio_remove
 };
 
 int bl_sdio_register_drv(void)

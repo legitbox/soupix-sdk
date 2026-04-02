@@ -1402,7 +1402,7 @@ static int cvi_vcodec_register_cdev(struct cvi_vpu_device *vdev)
 {
 	int err = 0;
 
-	vdev->vpu_class = class_create(THIS_MODULE, VPU_CLASS_NAME);
+	vdev->vpu_class = class_create(VPU_CLASS_NAME);
 	if (IS_ERR(vdev->vpu_class)) {
 		VCODEC_DBG_ERR("create class failed\n");
 		return PTR_ERR(vdev->vpu_class);
@@ -1568,7 +1568,7 @@ static int cvi_vcodec_allocate_memory(struct platform_device *pdev)
 }
 #endif
 
-static int vpu_remove(struct platform_device *pdev)
+static void vpu_remove(struct platform_device *pdev)
 {
 	struct cvi_vpu_device *vdev = platform_get_drvdata(pdev);
 
@@ -1608,7 +1608,6 @@ static int vpu_remove(struct platform_device *pdev)
 
 	cviReleaseRegResource(vdev);
 
-	return 0;
 }
 
 struct mutex vcodec_mutex;
@@ -1951,7 +1950,7 @@ static struct platform_driver vpu_driver = {
 		.of_match_table = cvi_vpu_match_table,
 	},
 	.probe = vpu_probe,
-	.remove = vpu_remove,
+	.remove_new = vpu_remove,
 	.suspend = vpu_suspend,
 	.resume = vpu_resume,
 };

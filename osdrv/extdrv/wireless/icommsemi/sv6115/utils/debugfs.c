@@ -42,7 +42,7 @@ static struct proc_dir_entry *__ssv_procfs;
 
 #define	READ_CHUNK	32 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
-#define PDE_DATA(inode) ({ \
+#define pde_data(inode) ({ \
     struct proc_dir_entry *dp = PDE(inode); \
     data = dp->data; })
 #endif
@@ -195,7 +195,7 @@ static int ssv_cmd_submit(struct ssv_cmd_data *cmd_data, char *cmd)
 
 static int ssv6xxx_cmd_file_open(struct inode *inode, struct file *filp)
 {
-    void *data = PDE_DATA(inode);
+    void *data = pde_data(inode);
 
     filp->private_data = data;
     return 0;

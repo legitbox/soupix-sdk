@@ -1190,7 +1190,7 @@ static struct i2c_driver gsl_ts_driver = {
 	},
 
 	.probe		= gsl_ts_probe,
-	.remove		= (gsl_ts_remove),
+	.remove_new		= (gsl_ts_remove),
 	.id_table	= gsl_ts_id,
 };
 

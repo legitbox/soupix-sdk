@@ -769,7 +769,7 @@ err_dts:
 	return ret;
 }
 
-static int cvifb_remove(struct platform_device *pdev)
+static void cvifb_remove(struct platform_device *pdev)
 {
 	struct fb_info *info = platform_get_drvdata(pdev);
 
@@ -782,7 +782,6 @@ static int cvifb_remove(struct platform_device *pdev)
 		framebuffer_release(info);
 	}
 
-	return 0;
 }
 
 static const struct of_device_id cvi_fb_dt_match[] = {
@@ -792,7 +791,7 @@ static const struct of_device_id cvi_fb_dt_match[] = {
 
 static struct platform_driver cvifb_driver = {
 	.probe		= cvifb_probe,
-	.remove		= cvifb_remove,
+	.remove_new		= cvifb_remove,
 	.driver     = {
 		.name		= "cvifb",
 		.owner		= THIS_MODULE,

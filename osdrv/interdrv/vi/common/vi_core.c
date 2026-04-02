@@ -101,7 +101,7 @@ static int vi_core_register_cdev(struct cvi_vi_dev *dev)
 	struct device *dev_t;
 	int err = 0;
 
-	dev->vi_class = class_create(THIS_MODULE, CVI_VI_CLASS_NAME);
+	dev->vi_class = class_create(CVI_VI_CLASS_NAME);
 	if (IS_ERR(dev->vi_class)) {
 		dev_err(dev->dev, "create class failed\n");
 		return PTR_ERR(dev->vi_class);
@@ -253,7 +253,7 @@ err_req_irq:
 	return ret;
 }
 
-static int vi_core_remove(struct platform_device *pdev)
+static void vi_core_remove(struct platform_device *pdev)
 {
 	int ret = 0;
 
@@ -320,7 +320,7 @@ MODULE_DEVICE_TABLE(of, vi_core_match);
 
 static struct platform_driver vi_core_driver = {
 	.probe = vi_core_probe,
-	.remove = vi_core_remove,
+	.remove_new = vi_core_remove,
 	.driver = {
 		.name = CVI_VI_DEV_NAME,
 		.of_match_table = vi_core_match,

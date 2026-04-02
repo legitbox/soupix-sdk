@@ -509,7 +509,7 @@ static int cvi_jpu_register_cdev(struct cvi_jpu_device *jdev)
 {
 	int err = 0;
 
-	jdev->jpu_class = class_create(THIS_MODULE, JPU_CLASS_NAME);
+	jdev->jpu_class = class_create(JPU_CLASS_NAME);
 	if (IS_ERR(jdev->jpu_class)) {
 		pr_err("create class failed\n");
 		return PTR_ERR(jdev->jpu_class);
@@ -578,7 +578,7 @@ static int jpu_allocate_memory(struct cvi_jpu_device *jdev, struct platform_devi
 }
 #endif // #ifndef USE_VMALLOC_FOR_INSTANCE_POOL_MEMORY
 
-static int jpu_remove(struct platform_device *pdev)
+static void jpu_remove(struct platform_device *pdev)
 {
 	struct cvi_jpu_device *jdev = platform_get_drvdata(pdev);
 
@@ -614,7 +614,6 @@ static int jpu_remove(struct platform_device *pdev)
 		jdev->jpu_control_register.virt_addr = 0x00;
 	}
 
-	return 0;
 }
 
 static void cvi_jpu_unregister_cdev(struct platform_device *pdev)
@@ -660,7 +659,7 @@ static struct platform_driver jpu_driver = {
 		.of_match_table = cvi_jpu_match_table,
 	},
 	.probe    = jpu_probe,
-	.remove   = jpu_remove,
+	.remove_new   = jpu_remove,
 #ifdef CONFIG_PM
 	.suspend  = jpu_suspend,
 	.resume   = jpu_resume,

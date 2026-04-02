@@ -615,7 +615,7 @@ static int cvi_fast_image_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_fast_image_remove(struct platform_device *pdev)
+static void cvi_fast_image_remove(struct platform_device *pdev)
 {
 	struct cvi_fast_image_device *ndev = platform_get_drvdata(pdev);
 
@@ -623,7 +623,6 @@ static int cvi_fast_image_remove(struct platform_device *pdev)
 	platform_set_drvdata(pdev, NULL);
 	pr_debug("%s DONE\n", __func__);
 
-	return 0;
 }
 
 static const struct of_device_id cvi_rtos_image_match[] = {
@@ -633,7 +632,7 @@ static const struct of_device_id cvi_rtos_image_match[] = {
 
 static struct platform_driver cvi_fast_image_driver = {
 	.probe = cvi_fast_image_probe,
-	.remove = cvi_fast_image_remove,
+	.remove_new = cvi_fast_image_remove,
 	.driver = {
 		.owner = THIS_MODULE,
 		.name = FAST_IMAGE_DEV_NAME,
@@ -915,7 +914,7 @@ static int cvi_fast_image_init(void)
 	int rc;
 
 	pr_debug("cvi_fast_image_init");
-	pbase_class = class_create(THIS_MODULE, FAST_IMAGE_DEV_NAME);
+	pbase_class = class_create(FAST_IMAGE_DEV_NAME);
 	if (IS_ERR(pbase_class)) {
 		pr_err("create class failed\n");
 		rc = PTR_ERR(pbase_class);

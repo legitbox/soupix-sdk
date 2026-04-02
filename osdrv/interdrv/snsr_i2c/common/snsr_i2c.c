@@ -417,7 +417,7 @@ static int cvi_snsr_i2c_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_snsr_i2c_remove(struct platform_device *pdev)
+static void cvi_snsr_i2c_remove(struct platform_device *pdev)
 {
 	struct cvi_i2c_dev *dev;
 	int i = 0;
@@ -430,7 +430,6 @@ static int cvi_snsr_i2c_remove(struct platform_device *pdev)
 	dev = dev_get_drvdata(&pdev->dev);
 	if (!dev) {
 		dev_err(&pdev->dev, "Can not get cvi_snsr drvdata");
-		return 0;
 	}
 
 	for (i = 0; i < I2C_MAX_NUM; i++) {
@@ -444,7 +443,6 @@ static int cvi_snsr_i2c_remove(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, NULL);
 
-	return 0;
 }
 
 static void cvi_snsr_i2c_pdev_release(struct device *dev)
@@ -459,7 +457,7 @@ static struct platform_device cvi_snsr_i2c_pdev = {
 
 static struct platform_driver cvi_snsr_i2c_pdrv = {
 	.probe      = cvi_snsr_i2c_probe,
-	.remove     = cvi_snsr_i2c_remove,
+	.remove_new     = cvi_snsr_i2c_remove,
 	.driver     = {
 		.name		= "snsr_i2c",
 		.owner		= THIS_MODULE,

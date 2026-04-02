@@ -243,7 +243,7 @@ static void getFrameRate(VENC_CHN_ATTR_S *pstChnAttr, CVI_U32 *pu32SrcFrameRate,
 
 static int venc_proc_show(struct seq_file *m, void *v)
 {
-	seq_printf(m, "Module: [VENC] System Build Time [%s]\n", UTS_VERSION);
+	seq_printf(m, "Module: [VENC] System Build Time [%s]\n", "soupix-sdk 6.12");
 
 	if (handle != NULL) {
 		int idx = 0;
@@ -537,7 +537,7 @@ static int venc_proc_show(struct seq_file *m, void *v)
 
 static int venc_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, venc_proc_show, PDE_DATA(inode));
+	return single_open(file, venc_proc_show, pde_data(inode));
 }
 
 static ssize_t
@@ -698,7 +698,7 @@ static int h265e_proc_show(struct seq_file *m, void *v)
 	int idx = 0;
 	CVI_VENC_PARAM_MOD_S *pVencModParam;
 
-	seq_printf(m, "Module: [H265E] System Build Time [%s]\n", UTS_VERSION);
+	seq_printf(m, "Module: [H265E] System Build Time [%s]\n", "soupix-sdk 6.12");
 
 	if (handle == NULL)
 		return 0;
@@ -779,7 +779,7 @@ static int h265e_proc_show(struct seq_file *m, void *v)
 
 static int h265e_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, h265e_proc_show, PDE_DATA(inode));
+	return single_open(file, h265e_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
@@ -806,7 +806,7 @@ static int codecinst_proc_show(struct seq_file *m, void *v)
 	venc_enc_ctx *pEncCtx;
 	PAYLOAD_TYPE_E enType;
 
-	seq_printf(m, "Module: [CodecInst] System Build Time [%s]\n", UTS_VERSION);
+	seq_printf(m, "Module: [CodecInst] System Build Time [%s]\n", "soupix-sdk 6.12");
 
 	if (handle == NULL)
 		return 0;
@@ -831,7 +831,7 @@ static int codecinst_proc_show(struct seq_file *m, void *v)
 
 static int codecinst_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, codecinst_proc_show, PDE_DATA(inode));
+	return single_open(file, codecinst_proc_show, pde_data(inode));
 }
 
 
@@ -901,7 +901,7 @@ static int h264e_proc_show(struct seq_file *m, void *v)
 	CVI_VENC_PARAM_MOD_S *pVencModParam;
 	CVI_U32 u32Profile;
 
-	seq_printf(m, "Module: [H264E] System Build Time [%s]\n", UTS_VERSION);
+	seq_printf(m, "Module: [H264E] System Build Time [%s]\n", "soupix-sdk 6.12");
 
 	if (handle == NULL)
 		return 0;
@@ -984,7 +984,7 @@ static int h264e_proc_show(struct seq_file *m, void *v)
 
 static int h264e_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, h264e_proc_show, PDE_DATA(inode));
+	return single_open(file, h264e_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
@@ -1027,7 +1027,7 @@ static int jpege_proc_show(struct seq_file *m, void *v)
 	int idx = 0;
 	CVI_VENC_PARAM_MOD_S *pVencModParam;
 
-	seq_printf(m, "Module: [JPEGE] System Build Time [%s]\n", UTS_VERSION);
+	seq_printf(m, "Module: [JPEGE] System Build Time [%s]\n", "soupix-sdk 6.12");
 
 	if (handle == NULL)
 		return 0;
@@ -1129,7 +1129,7 @@ static int jpege_proc_show(struct seq_file *m, void *v)
 
 static int jpege_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, jpege_proc_show, PDE_DATA(inode));
+	return single_open(file, jpege_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
@@ -1171,7 +1171,7 @@ static int rc_proc_show(struct seq_file *m, void *v)
 {
 	int idx = 0;
 
-	seq_printf(m, "Module: [RC] System Build Time [%s]\n", UTS_VERSION);
+	seq_printf(m, "Module: [RC] System Build Time [%s]\n", "soupix-sdk 6.12");
 
 	if (handle == NULL)
 		return 0;
@@ -1759,7 +1759,7 @@ static int rc_proc_show(struct seq_file *m, void *v)
 
 static int rc_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, rc_proc_show, PDE_DATA(inode));
+	return single_open(file, rc_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
@@ -1798,7 +1798,7 @@ int rc_proc_deinit(void)
 #ifdef ENABLE_DEC
 static int vdec_proc_show(struct seq_file *m, void *v)
 {
-	seq_printf(m, "Module: [VDEC] System Build Time [%s]\n", UTS_VERSION);
+	seq_printf(m, "Module: [VDEC] System Build Time [%s]\n", "soupix-sdk 6.12");
 	if (vdec_handle != NULL && MaxVdecChnNum > 0) {
 		int idx;
 		VDEC_MOD_PARAM_S *pVdecModParam = &vdec_handle->g_stModParam;
@@ -2046,7 +2046,7 @@ static int vdec_proc_show(struct seq_file *m, void *v)
 
 static int vdec_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, vdec_proc_show, PDE_DATA(inode));
+	return single_open(file, vdec_proc_show, pde_data(inode));
 }
 
 static ssize_t vdec_proc_write(struct file *file, const char __user *user_buf,

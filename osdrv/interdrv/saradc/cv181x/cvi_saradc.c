@@ -343,7 +343,7 @@ int cvi_saradc_register_cdev(struct cvi_saradc_device *ndev)
 	int ret;
 	int rc;
 
-	saradc_class = class_create(THIS_MODULE, CVI_SARADC_CLASS_NAME);
+	saradc_class = class_create(CVI_SARADC_CLASS_NAME);
 	if (IS_ERR(saradc_class)) {
 		pr_err("create class failed\n");
 		return PTR_ERR(saradc_class);
@@ -470,7 +470,7 @@ static int cvi_saradc_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_saradc_remove(struct platform_device *pdev)
+static void cvi_saradc_remove(struct platform_device *pdev)
 {
 	struct cvi_saradc_device *ndev = platform_get_drvdata(pdev);
 
@@ -488,7 +488,6 @@ static int cvi_saradc_remove(struct platform_device *pdev)
 
 	pr_debug("cvi_saradc_remove\n");
 
-	return 0;
 }
 
 static const struct of_device_id cvi_saradc_match[] = {
@@ -542,7 +541,7 @@ static SIMPLE_DEV_PM_OPS(saradc_cv_pm_ops, saradc_cv_suspend,
 						 saradc_cv_resume);
 static struct platform_driver cvi_saradc_driver = {
 	.probe = cvi_saradc_probe,
-	.remove = cvi_saradc_remove,
+	.remove_new = cvi_saradc_remove,
 	.driver = {
 			.owner = THIS_MODULE,
 			.name = "cvi-saradc",

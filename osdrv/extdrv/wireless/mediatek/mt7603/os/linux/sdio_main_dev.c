@@ -261,7 +261,7 @@ static struct sdio_driver rt_sdio_drv = {
    .name = "rt_sdio_driver", /* MTK SDIO Client Driver */    
    .id_table = rt_sdio_id_tbl, /* all supported struct sdio_device_id table */    
 	.probe = rt_sdio_probe,
-	.remove = rt_sdio_remove,
+	.remove_new = rt_sdio_remove,
    /*
    #if HIF_SDIO_SUPPORT_SUSPEND    
    .drv = {       .pm = &mtk_sdio_pmops,    },

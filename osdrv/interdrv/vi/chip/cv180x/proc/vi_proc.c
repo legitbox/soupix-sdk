@@ -339,7 +339,7 @@ static int _vi_proc_show(struct seq_file *m, void *v)
 
 static int _vi_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, _vi_proc_show, PDE_DATA(inode));
+	return single_open(file, _vi_proc_show, pde_data(inode));
 }
 #if (KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE)
 static const struct proc_ops _vi_proc_fops = {

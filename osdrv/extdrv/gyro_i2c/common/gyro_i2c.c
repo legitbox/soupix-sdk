@@ -97,7 +97,7 @@ static ssize_t proc_gy_write(struct file *file, const char __user *user_buf,
 
 static int proc_gy_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, gyro_proc_show, PDE_DATA(inode));
+	return single_open(file, gyro_proc_show, pde_data(inode));
 }
 
 #if (KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE)
@@ -241,7 +241,7 @@ static int __init cvi_gyro_probe(void)
 	}
 
 	/* 4. auto create device node */
-	ndev.class = class_create(THIS_MODULE, CVI_GYRO_CLASS_NAME);
+	ndev.class = class_create(CVI_GYRO_CLASS_NAME);
 	if (IS_ERR(ndev.class)) {
 		pr_err("[GYRO] create class failed\n");
 		return PTR_ERR(ndev.class);

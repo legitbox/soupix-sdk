@@ -275,7 +275,7 @@ static int ldc_test_proc_show(struct seq_file *m, void *v)
 
 static int ldc_test_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, ldc_test_proc_show, PDE_DATA(inode));
+	return single_open(file, ldc_test_proc_show, pde_data(inode));
 }
 
 static ssize_t ldc_test_proc_write(struct file *file, const char __user *user_buf, size_t count, loff_t *ppos)

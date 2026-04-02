@@ -81,7 +81,7 @@ static ssize_t _vo_disp_proc_write(struct file *file, const char __user *user_bu
 
 static int _vo_disp_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, _vo_disp_proc_show, PDE_DATA(inode));
+	return single_open(file, _vo_disp_proc_show, pde_data(inode));
 
 }
 

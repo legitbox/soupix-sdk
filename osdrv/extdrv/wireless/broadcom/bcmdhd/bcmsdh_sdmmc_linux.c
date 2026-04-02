@@ -293,7 +293,7 @@ static void dummy_remove(struct sdio_func *func)
 
 static struct sdio_driver dummy_sdmmc_driver = {
 	.probe		= dummy_probe,
-	.remove		= dummy_remove,
+	.remove_new		= dummy_remove,
 	.name		= "dummy_sdmmc",
 	.id_table	= bcmsdh_sdmmc_ids,
 	};
@@ -314,7 +314,7 @@ void sdio_func_unreg_notify(void)
 
 static struct sdio_driver bcmsdh_sdmmc_driver = {
 	.probe		= bcmsdh_sdmmc_probe,
-	.remove		= bcmsdh_sdmmc_remove,
+	.remove_new		= bcmsdh_sdmmc_remove,
 	.name		= "bcmsdh_sdmmc",
 	.id_table	= bcmsdh_sdmmc_ids,
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 39)) && defined(CONFIG_PM)

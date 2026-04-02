@@ -3086,7 +3086,7 @@ static int proc_cif_show(struct seq_file *m, void *v)
 	int i;
 
 	seq_printf(m, "\nModule: [MIPI_RX], Build Time[%s]\n",
-			UTS_VERSION);
+			"soupix-sdk 6.12");
 	seq_puts(m, "\n------------Combo DEV ATTR--------------\n");
 	for (i = 0; i < MAX_LINK_NUM; i++)
 		if (dev->link[i].is_on)
@@ -3255,7 +3255,7 @@ static int dbg_hdler(struct cvi_cif_dev *dev, char const *input)
 
 static ssize_t cif_proc_write(struct file *file, const char __user *user_buf, size_t count, loff_t *ppos)
 {
-	struct cvi_cif_dev *dev = PDE_DATA(file_inode(file));
+	struct cvi_cif_dev *dev = pde_data(file_inode(file));
 #if (KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE)
 	char txt_buff[MAX_CIF_PROC_BUF];
 
@@ -3273,7 +3273,7 @@ static ssize_t cif_proc_write(struct file *file, const char __user *user_buf, si
 
 static int proc_cif_open(struct inode *inode, struct file *file)
 {
-	struct cvi_cif_dev *dev = PDE_DATA(inode);
+	struct cvi_cif_dev *dev = pde_data(inode);
 
 	return single_open(file, proc_cif_show, dev);
 }
@@ -3337,7 +3337,7 @@ static int cvi_cif_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_cif_remove(struct platform_device *pdev)
+static void cvi_cif_remove(struct platform_device *pdev)
 {
 	struct cvi_cif_dev *dev;
 
@@ -3353,7 +3353,6 @@ static int cvi_cif_remove(struct platform_device *pdev)
 	dev = dev_get_drvdata(&pdev->dev);
 	if (!dev) {
 		dev_err(&pdev->dev, "Can not get cvi_cif drvdata");
-		return 0;
 	}
 
 	misc_deregister(&dev->miscdev);
@@ -3362,7 +3361,6 @@ static int cvi_cif_remove(struct platform_device *pdev)
 #ifdef CONFIG_PROC_FS
 	proc_remove(cif_proc_entry);
 #endif
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -3458,7 +3456,7 @@ static struct platform_device cvi_cif_pdev = {
 
 static struct platform_driver cvi_cif_pdrv = {
 	.probe      = cvi_cif_probe,
-	.remove     = cvi_cif_remove,
+	.remove_new     = cvi_cif_remove,
 	.driver     = {
 		.name		= "cif",
 		.owner		= THIS_MODULE,

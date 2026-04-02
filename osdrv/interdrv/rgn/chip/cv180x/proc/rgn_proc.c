@@ -40,7 +40,7 @@ static int rgn_proc_show(struct seq_file *m, void *v)
 		return -1;
 	}
 
-	seq_printf(m, "\nModule: [RGN], Build Time[%s]\n", UTS_VERSION);
+	seq_printf(m, "\nModule: [RGN], Build Time[%s]\n", "soupix-sdk 6.12");
 	// Region status of overlay
 	seq_puts(m, "\n------REGION STATUS OF OVERLAY--------------------------------------------\n");
 	seq_printf(m, "%10s%10s%10s%20s%10s%10s%10s%20s%20s%10s%10s%7s%12s\n",
@@ -249,7 +249,7 @@ static int rgn_proc_show(struct seq_file *m, void *v)
 
 static int rgn_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, rgn_proc_show, PDE_DATA(inode));
+	return single_open(file, rgn_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))

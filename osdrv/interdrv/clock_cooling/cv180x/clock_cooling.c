@@ -266,14 +266,13 @@ static int cv180x_cooling_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cv180x_cooling_remove(struct platform_device *pdev)
+static void cv180x_cooling_remove(struct platform_device *pdev)
 {
 	struct cv180x_cooling_device *cvcdev = platform_get_drvdata(pdev);
 
 	if (!IS_ERR(cvcdev))
 		cv180x_cooling_device_unregister(cvcdev);
 
-	return 0;
 }
 
 static const struct of_device_id cv180x_cooling_match[] = {
@@ -288,7 +287,7 @@ static struct platform_driver cv180x_cooling_driver = {
 		.of_match_table = of_match_ptr(cv180x_cooling_match),
 	},
 	.probe = cv180x_cooling_probe,
-	.remove = cv180x_cooling_remove,
+	.remove_new = cv180x_cooling_remove,
 };
 
 module_platform_driver(cv180x_cooling_driver);

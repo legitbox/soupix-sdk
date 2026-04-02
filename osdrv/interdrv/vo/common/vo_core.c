@@ -82,7 +82,7 @@ static int vo_core_register_cdev(struct cvi_vo_dev *dev)
 	struct device *dev_t;
 	int err = 0;
 
-	dev->vo_class = class_create(THIS_MODULE, CVI_VO_CLASS_NAME);
+	dev->vo_class = class_create(CVI_VO_CLASS_NAME);
 	if (IS_ERR(dev->vo_class)) {
 		dev_err(dev->dev, "create class failed\n");
 		return PTR_ERR(dev->vo_class);
@@ -236,7 +236,7 @@ err_clk_init:
 	return ret;
 }
 
-static int vo_core_remove(struct platform_device *pdev)
+static void vo_core_remove(struct platform_device *pdev)
 {
 	int ret = 0;
 	bool status = false;
@@ -360,7 +360,7 @@ MODULE_DEVICE_TABLE(of, vo_core_match);
 
 static struct platform_driver vo_core_driver = {
 	.probe = vo_core_probe,
-	.remove = vo_core_remove,
+	.remove_new = vo_core_remove,
 	.driver = {
 		.name = CVI_VO_DEV_NAME,
 		.of_match_table = vo_core_match,

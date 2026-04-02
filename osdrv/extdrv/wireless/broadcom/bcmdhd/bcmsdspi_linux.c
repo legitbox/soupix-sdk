@@ -142,7 +142,7 @@ static int  bcmsdh_spi_remove(struct spi_device *spi_dev)
 
 static struct spi_driver bcmsdh_spi_driver = {
 	.probe		= bcmsdh_spi_probe,
-	.remove		= bcmsdh_spi_remove,
+	.remove_new		= bcmsdh_spi_remove,
 	.driver		= {
 		.name = "wlan_spi",
 		.bus    = &spi_bus_type,

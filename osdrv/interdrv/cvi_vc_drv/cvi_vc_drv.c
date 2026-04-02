@@ -1360,7 +1360,7 @@ static int cvi_vc_drv_register_cdev(struct cvi_vc_drv_device *vdev)
 	int err = 0;
 	int i = 0;
 
-	vdev->cvi_vc_class = class_create(THIS_MODULE, CVI_VC_DRV_CLASS_NAME);
+	vdev->cvi_vc_class = class_create(CVI_VC_DRV_CLASS_NAME);
 	if (IS_ERR(vdev->cvi_vc_class)) {
 		pr_err("create class failed\n");
 		return PTR_ERR(vdev->cvi_vc_class);
@@ -1665,7 +1665,7 @@ ERROR_PROBE_DEVICE:
 	return err;
 }
 
-static int cvi_vc_drv_remove(struct platform_device *pdev)
+static void cvi_vc_drv_remove(struct platform_device *pdev)
 {
 	struct cvi_vc_drv_device *vdev = platform_get_drvdata(pdev);
 
@@ -1700,7 +1700,6 @@ static int cvi_vc_drv_remove(struct platform_device *pdev)
 	}
 #endif
 	class_destroy(vdev->cvi_vc_class);
-	return 0;
 }
 
 unsigned int cvi_vc_drv_read_vc_reg(REG_TYPE eRegType, unsigned long addr)
@@ -1787,7 +1786,7 @@ static struct platform_driver cvi_vc_drv_platform_driver = {
 		.of_match_table = cvi_vc_drv_match_table,
 	},
 	.probe = cvi_vc_drv_probe,
-	.remove = cvi_vc_drv_remove,
+	.remove_new = cvi_vc_drv_remove,
 };
 
 static int __init cvi_vc_drv_init(void)

@@ -908,7 +908,7 @@ static int cvi_sys_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_sys_remove(struct platform_device *pdev)
+static void cvi_sys_remove(struct platform_device *pdev)
 {
 	struct cvi_sys_device *ndev = platform_get_drvdata(pdev);
 
@@ -917,7 +917,6 @@ static int cvi_sys_remove(struct platform_device *pdev)
 	misc_deregister(&ndev->miscdev);
 	platform_set_drvdata(pdev, NULL);
 
-	return 0;
 }
 
 static const struct of_device_id cvitek_sys_match[] = {
@@ -928,7 +927,7 @@ MODULE_DEVICE_TABLE(of, cvitek_sys_match);
 
 static struct platform_driver cvitek_sys_driver = {
 	.probe = cvi_sys_probe,
-	.remove = cvi_sys_remove,
+	.remove_new = cvi_sys_remove,
 	.driver = {
 			.owner = THIS_MODULE,
 			.name = CVI_SYS_DEV_NAME,

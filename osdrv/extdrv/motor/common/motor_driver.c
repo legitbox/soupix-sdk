@@ -123,7 +123,7 @@ static int proc_motor_show(struct seq_file *m, void *v)
 
 static int proc_motor_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, proc_motor_show, PDE_DATA(inode));
+	return single_open(file, proc_motor_show, pde_data(inode));
 }
 
 static ssize_t proc_motor_write(struct file *file, const char __user *user_buf, size_t count, loff_t *ppos)
@@ -217,7 +217,7 @@ const struct spi_device_id cvi_id_table[] = {
 
 struct spi_driver spi_ms41929 = {
 	.probe = ms41929_probe,
-	.remove = ms41929_remove,
+	.remove_new = ms41929_remove,
 	.driver = {
 		.name = "ms41929",
 		.owner = THIS_MODULE,
@@ -257,7 +257,7 @@ static int __init cvi_motor_init(void)
 	}
 
 	//create device node
-	ndev.class = class_create(THIS_MODULE, CVI_MOTOR_CLASS_NAME);
+	ndev.class = class_create(CVI_MOTOR_CLASS_NAME);
 	if (IS_ERR(ndev.class)) {
 		pr_err("[MOTOR] create class failed\n");
 		return PTR_ERR(ndev.class);

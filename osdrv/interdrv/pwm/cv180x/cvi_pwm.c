@@ -344,7 +344,7 @@ static int pwm_cv_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int pwm_cv_remove(struct platform_device *pdev)
+static void pwm_cv_remove(struct platform_device *pdev)
 {
 	struct cv_pwm_chip *chip = platform_get_drvdata(pdev);
 	int ret;
@@ -355,7 +355,6 @@ static int pwm_cv_remove(struct platform_device *pdev)
 
 	clk_disable_unprepare(chip->base_clk);
 
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -388,7 +387,7 @@ static struct platform_driver pwm_cv_driver = {
 		.of_match_table = of_match_ptr(cv_pwm_match),
 	},
 	.probe		= pwm_cv_probe,
-	.remove		= pwm_cv_remove,
+	.remove_new		= pwm_cv_remove,
 };
 module_platform_driver(pwm_cv_driver);
 

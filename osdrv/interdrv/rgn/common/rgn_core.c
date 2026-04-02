@@ -108,7 +108,7 @@ err_create_instance:
 	return ret;
 }
 
-static int cvi_rgn_remove(struct platform_device *pdev)
+static void cvi_rgn_remove(struct platform_device *pdev)
 {
 	struct cvi_rgn_dev *rdev = platform_get_drvdata(pdev);
 	int ret = 0;
@@ -141,7 +141,7 @@ MODULE_DEVICE_TABLE(of, cvi_rgn_dt_match);
 
 static struct platform_driver rgn_core_driver = {
 	.probe = cvi_rgn_probe,
-	.remove = cvi_rgn_remove,
+	.remove_new = cvi_rgn_remove,
 	.driver = {
 		.name = CVI_RGN_DEV_NAME,
 		.of_match_table = cvi_rgn_dt_match,

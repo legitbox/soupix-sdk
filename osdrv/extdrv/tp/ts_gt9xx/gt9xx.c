@@ -3042,7 +3042,7 @@ static const struct i2c_device_id goodix_ts_id[] = {
 
 static struct i2c_driver goodix_ts_driver = {
     .probe      = goodix_ts_probe,
-    .remove     = goodix_ts_remove,
+    .remove_new     = goodix_ts_remove,
     .id_table   = goodix_ts_id,
     .driver = {
         .name     = GTP_I2C_NAME,

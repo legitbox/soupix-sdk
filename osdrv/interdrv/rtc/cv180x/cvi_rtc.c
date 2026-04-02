@@ -457,7 +457,7 @@ disable_clk:
 	return ret;
 }
 
-static int cvi_rtc_remove(struct platform_device *pdev)
+static void cvi_rtc_remove(struct platform_device *pdev)
 {
 	struct cvi_rtc_info *info = platform_get_drvdata(pdev);
 
@@ -466,7 +466,6 @@ static int cvi_rtc_remove(struct platform_device *pdev)
 	cancel_delayed_work(&info->cvi_rtc_work);
 #endif
 
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -494,7 +493,7 @@ static void cvi_rtc_shutdown(struct platform_device *pdev)
 
 MODULE_ALIAS("platform:cvi_rtc");
 static struct platform_driver cvi_rtc_driver = {
-	.remove		= cvi_rtc_remove,
+	.remove_new		= cvi_rtc_remove,
 	.shutdown	= cvi_rtc_shutdown,
 	.driver		= {
 		.name	= "cvi_rtc",

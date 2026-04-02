@@ -810,7 +810,7 @@ err_res:
 	return rc;
 }
 
-static int cvi_mipi_tx_remove(struct platform_device *pdev)
+static void cvi_mipi_tx_remove(struct platform_device *pdev)
 {
 	struct cvi_vip_mipi_tx_dev *tdev;
 
@@ -837,7 +837,6 @@ static int cvi_mipi_tx_remove(struct platform_device *pdev)
 
 	mipi_tx_proc_remove();
 
-	return 0;
 }
 
 #if defined(CONFIG_PM)
@@ -876,7 +875,7 @@ static const struct of_device_id cvi_mipi_tx_dt_match[] = { { .compatible = "cvi
 
 static struct platform_driver cvi_mipi_tx_pdrv = {
 	.probe = cvi_mipi_tx_probe,
-	.remove = cvi_mipi_tx_remove,
+	.remove_new = cvi_mipi_tx_remove,
 	.driver = {
 		.name = MIPI_TX_DEV_NAME,
 		.owner = THIS_MODULE,

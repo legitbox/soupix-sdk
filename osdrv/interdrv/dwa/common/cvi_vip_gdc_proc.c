@@ -20,7 +20,7 @@ static int gdc_proc_show(struct seq_file *m, void *v)
 		return -1;
 	}
 
-	seq_printf(m, "\nModule: [GDC], Build Time[%s]\n", UTS_VERSION);
+	seq_printf(m, "\nModule: [GDC], Build Time[%s]\n", "soupix-sdk 6.12");
 	// recent job info
 	seq_puts(m, "\n-------------------------------RECENT JOB INFO----------------------------\n");
 	seq_printf(m, "%10s%10s%10s%10s%20s%20s%20s%20s\n",
@@ -146,7 +146,7 @@ static int gdc_proc_show(struct seq_file *m, void *v)
 
 static int gdc_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, gdc_proc_show, PDE_DATA(inode));
+	return single_open(file, gdc_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))

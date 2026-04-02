@@ -171,7 +171,7 @@ int vpss_ctx_proc_show(struct seq_file *m, void *v)
 	struct cvi_vpss_ctx **pVpssCtx = vpss_get_shdw_ctx();
 
 	// Module Param
-	seq_printf(m, "\nModule: [VPSS], Build Time[%s]\n", UTS_VERSION);
+	seq_printf(m, "\nModule: [VPSS], Build Time[%s]\n", "soupix-sdk 6.12");
 	seq_puts(m, "\n-------------------------------MODULE PARAM-------------------------------\n");
 	seq_printf(m, "%25s%25s\n", "vpss_vb_source", "vpss_split_node_num");
 	seq_printf(m, "%18d%25d\n", 0, 1);
@@ -528,7 +528,7 @@ static ssize_t vpss_proc_write(struct file *file, const char __user *user_buf, s
 
 static int vpss_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, vpss_proc_show, PDE_DATA(inode));
+	return single_open(file, vpss_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))

@@ -517,7 +517,7 @@ err_irq:
  * cvi_ldc_remove - device remove method.
  * @pdev: Pointer of platform device.
  */
-static int cvi_dwa_remove(struct platform_device *pdev)
+static void cvi_dwa_remove(struct platform_device *pdev)
 {
 	struct cvi_dwa_vdev *wdev;
 
@@ -539,12 +539,10 @@ static int cvi_dwa_remove(struct platform_device *pdev)
 	wdev = dev_get_drvdata(&pdev->dev);
 	if (!wdev) {
 		dev_err(&pdev->dev, "Can not get cvi_vip drvdata");
-		return 0;
 	}
 
 	dev_set_drvdata(&pdev->dev, NULL);
 
-	return 0;
 }
 
 static const struct of_device_id cvi_dwa_dt_match[] = {
@@ -612,7 +610,7 @@ static SIMPLE_DEV_PM_OPS(dwa_pm_ops, NULL, NULL);
 
 static struct platform_driver cvi_dwa_driver = {
 	.probe      = cvi_dwa_probe,
-	.remove     = cvi_dwa_remove,
+	.remove_new     = cvi_dwa_remove,
 	.driver     = {
 		.name		= "cvi-dwa",
 		.owner		= THIS_MODULE,

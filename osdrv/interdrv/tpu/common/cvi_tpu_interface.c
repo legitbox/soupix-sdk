@@ -258,7 +258,7 @@ static ssize_t tpu_proc_write(struct file *file, const char __user *user_buf, si
 
 static int tpu_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, tpu_proc_show, PDE_DATA(inode));
+	return single_open(file, tpu_proc_show, pde_data(inode));
 }
 
 #if (KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE)
@@ -1117,7 +1117,7 @@ int cvi_tpu_register_cdev(struct cvi_tpu_device *ndev)
 {
 	int ret;
 
-	npu_class = class_create(THIS_MODULE, CVI_TPU_CLASS_NAME);
+	npu_class = class_create(CVI_TPU_CLASS_NAME);
 	if (IS_ERR(npu_class)) {
 		pr_err("create class failed\n");
 		return PTR_ERR(npu_class);
@@ -1247,7 +1247,7 @@ static int cvi_tpu_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_tpu_remove(struct platform_device *pdev)
+static void cvi_tpu_remove(struct platform_device *pdev)
 {
 	struct cvi_tpu_device *ndev = platform_get_drvdata(pdev);
 	struct cvi_kernel_work *kernel_work = &ndev->kernel_work;
@@ -1275,7 +1275,6 @@ static int cvi_tpu_remove(struct platform_device *pdev)
 
 	//remove tpu proc
 	proc_remove(tpu_proc_dir);
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -1314,7 +1313,7 @@ MODULE_DEVICE_TABLE(of, cvi_tpu_match);
 
 static struct platform_driver cvi_tpu_driver = {
 	.probe = cvi_tpu_probe,
-	.remove = cvi_tpu_remove,
+	.remove_new = cvi_tpu_remove,
 	.driver = {
 			.owner = THIS_MODULE,
 			.name = "cvi-tpu",

@@ -315,7 +315,7 @@ static ssize_t ive_proc_write(struct file *file, const char __user *user_buf,
 
 static int ive_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, ive_proc_show, PDE_DATA(inode));
+	return single_open(file, ive_proc_show, pde_data(inode));
 }
 
 #ifdef CONFIG_COMPAT
@@ -814,7 +814,7 @@ int cvi_ive_register_cdev(struct cvi_ive_device *ndev)
 {
 	int ret;
 	// Create device to /sys/class/
-	class_id = class_create(THIS_MODULE, CVI_IVE_CLASS_NAME);
+	class_id = class_create(CVI_IVE_CLASS_NAME);
 	if (IS_ERR(class_id)) {
 		pr_err("[IVE] create class failed\n");
 		return PTR_ERR(class_id);
@@ -907,7 +907,7 @@ static int cvi_ive_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_ive_remove(struct platform_device *pdev)
+static void cvi_ive_remove(struct platform_device *pdev)
 {
 	// Get drvdata(global variables)
 	struct cvi_ive_device *ndev = platform_get_drvdata(pdev);
@@ -929,7 +929,6 @@ static int cvi_ive_remove(struct platform_device *pdev)
 
 	// remove ive proc
 	proc_remove(ndev->proc_dir);
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -958,7 +957,7 @@ MODULE_DEVICE_TABLE(of, cvi_ive_match);
 
 static struct platform_driver cvi_ive_driver = {
 	.probe = cvi_ive_probe,
-	.remove = cvi_ive_remove,
+	.remove_new = cvi_ive_remove,
 	.driver = {
 			.owner = THIS_MODULE,
 			.name = CVI_IVE_CDEV_NAME,

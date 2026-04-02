@@ -187,7 +187,7 @@ static ssize_t cvi_mon_bw_proc_write(struct file *file, const char __user *user_
 
 static int cvi_mon_bw_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, cvi_mon_bw_proc_show, PDE_DATA(inode));
+	return single_open(file, cvi_mon_bw_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
@@ -229,7 +229,7 @@ static int cvi_mon_window_proc_show(struct seq_file *m, void *v)
 
 static int cvi_mon_window_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, cvi_mon_window_proc_show, PDE_DATA(inode));
+	return single_open(file, cvi_mon_window_proc_show, pde_data(inode));
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
@@ -432,7 +432,7 @@ int cvi_mon_register_cdev(struct cvi_mon_device *ndev)
 {
 	int ret;
 
-	mon_class = class_create(THIS_MODULE, CVI_MON_CLASS_NAME);
+	mon_class = class_create(CVI_MON_CLASS_NAME);
 	if (IS_ERR(mon_class)) {
 		pr_err("create mon class failed\n");
 		return PTR_ERR(mon_class);
@@ -552,7 +552,7 @@ static int cvi_mon_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_mon_remove(struct platform_device *pdev)
+static void cvi_mon_remove(struct platform_device *pdev)
 {
 	struct cvi_mon_device *ndev = platform_get_drvdata(pdev);
 	struct cvi_mon_work *mon_work = &ndev->mon_work;
@@ -568,7 +568,6 @@ static int cvi_mon_remove(struct platform_device *pdev)
 	pr_debug("===cvi_mon_remove\n");
 
 	proc_remove(mon_proc_dir);
-	return 0;
 }
 
 static const struct of_device_id cvi_mon_match[] = {
@@ -579,7 +578,7 @@ MODULE_DEVICE_TABLE(of, cvi_mon_match);
 
 static struct platform_driver cvi_mon_driver = {
 	.probe = cvi_mon_probe,
-	.remove = cvi_mon_remove,
+	.remove_new = cvi_mon_remove,
 	.driver = {
 			.owner = THIS_MODULE,
 			.name = "cvi-mon",

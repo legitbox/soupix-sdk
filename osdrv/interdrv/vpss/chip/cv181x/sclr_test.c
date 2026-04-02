@@ -1894,7 +1894,7 @@ static int sclr_test_proc_show(struct seq_file *m, void *v)
 
 static int sclr_test_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, sclr_test_proc_show, PDE_DATA(inode));
+	return single_open(file, sclr_test_proc_show, pde_data(inode));
 }
 
 static CVI_U32 sclr_test_init(void)

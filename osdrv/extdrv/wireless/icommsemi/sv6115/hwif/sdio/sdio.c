@@ -2382,9 +2382,9 @@ struct sdio_driver ssv6xxx_sdio_driver =
     .id_table	= ssv6xxx_sdio_devices,
     .probe		= ssv6xxx_sdio_probe,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
-    .remove		= __devexit_p(ssv6xxx_sdio_remove),
+    .remove_new		= __devexit_p(ssv6xxx_sdio_remove),
 #else
-    .remove     = ssv6xxx_sdio_remove,
+    .remove_new     = ssv6xxx_sdio_remove,
 #endif
     
 #ifdef CONFIG_PM

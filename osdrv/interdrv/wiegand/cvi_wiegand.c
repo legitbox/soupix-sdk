@@ -463,7 +463,7 @@ static int cvi_wiegand_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_wiegand_remove(struct platform_device *pdev)
+static void cvi_wiegand_remove(struct platform_device *pdev)
 {
 	struct cvi_wiegand_device *ndev = platform_get_drvdata(pdev);
 
@@ -474,7 +474,6 @@ static int cvi_wiegand_remove(struct platform_device *pdev)
 	platform_set_drvdata(pdev, NULL);
 	pr_debug("=== cvi_wiegand_remove\n");
 
-	return 0;
 }
 
 static const struct of_device_id cvi_wiegand_match[] = {
@@ -485,7 +484,7 @@ MODULE_DEVICE_TABLE(of, cvi_wiegand_match);
 
 static struct platform_driver cvi_wiegand_driver = {
 	.probe = cvi_wiegand_probe,
-	.remove = cvi_wiegand_remove,
+	.remove_new = cvi_wiegand_remove,
 	.driver = {
 			.owner = THIS_MODULE,
 			.name = "cvi-wiegand",
@@ -497,7 +496,7 @@ static int __init wgn_init(void)
 {
 	int rc;
 
-	wiegand_class = class_create(THIS_MODULE, CVI_WIEGAND_CLASS_NAME);
+	wiegand_class = class_create(CVI_WIEGAND_CLASS_NAME);
 	if (IS_ERR(wiegand_class)) {
 		pr_err("create class failed\n");
 		return PTR_ERR(wiegand_class);

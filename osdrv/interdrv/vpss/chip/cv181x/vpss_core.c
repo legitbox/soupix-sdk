@@ -1702,7 +1702,7 @@ err_irq:
  * bmd_remove - device remove method.
  * @pdev: Pointer of platform device.
  */
-static int cvi_vpss_remove(struct platform_device *pdev)
+static void cvi_vpss_remove(struct platform_device *pdev)
 {
 	struct cvi_vip_dev *dev;
 
@@ -1733,7 +1733,6 @@ static int cvi_vpss_remove(struct platform_device *pdev)
 	misc_deregister(&dev->miscdev);
 	dev_set_drvdata(&pdev->dev, NULL);
 
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -1786,7 +1785,7 @@ static struct platform_device cvi_vpss_pdev = {
 
 static struct platform_driver cvi_vpss_pdrv = {
 	.probe      = cvi_vpss_probe,
-	.remove     = cvi_vpss_remove,
+	.remove_new     = cvi_vpss_remove,
 	.driver     = {
 		.name           = "vpss",
 		.owner          = THIS_MODULE,

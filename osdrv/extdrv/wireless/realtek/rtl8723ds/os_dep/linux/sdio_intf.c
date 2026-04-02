@@ -138,7 +138,7 @@ struct sdio_drv_priv {
 
 static struct sdio_drv_priv sdio_drvpriv = {
 	.r871xs_drv.probe = rtw_drv_init,
-	.r871xs_drv.remove = rtw_dev_remove,
+	.r871xs_drv.remove_new = rtw_dev_remove,
 	.r871xs_drv.name = (char *)DRV_NAME,
 	.r871xs_drv.id_table = sdio_ids,
 	.r871xs_drv.drv = {
