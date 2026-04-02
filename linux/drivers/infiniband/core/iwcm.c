@@ -95,7 +95,6 @@ static struct workqueue_struct *iwcm_wq;
 struct iwcm_work {
 	struct work_struct work;
 	struct iwcm_id_private *cm_id;
-	struct list_head list;
 	struct iw_cm_event event;
 	struct list_head free_list;
 };
@@ -111,7 +110,6 @@ static struct ctl_table iwcm_ctl_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
-	{ }
 };
 
 /*
@@ -144,8 +142,8 @@ static struct iwcm_work *get_work(struct iwcm_id_private *cm_id_priv)
 
 	if (list_empty(&cm_id_priv->work_free_list))
 		return NULL;
-	work = list_entry(cm_id_priv->work_free_list.next, struct iwcm_work,
-			  free_list);
+	work = list_first_entry(&cm_id_priv->work_free_list, struct iwcm_work,
+				free_list);
 	list_del_init(&work->free_list);
 	return work;
 }
@@ -177,7 +175,6 @@ static int alloc_work_entries(struct iwcm_id_private *cm_id_priv, int count)
 			return -ENOMEM;
 		}
 		work->cm_id = cm_id_priv;
-		INIT_LIST_HEAD(&work->list);
 		put_work(work);
 	}
 	return 0;
@@ -207,25 +204,23 @@ static void free_cm_id(struct iwcm_id_private *cm_id_priv)
 
 /*
  * Release a reference on cm_id. If the last reference is being
- * released, free the cm_id and return 1.
+ * released, free the cm_id and return 'true'.
  */
-static int iwcm_deref_id(struct iwcm_id_private *cm_id_priv)
+static bool iwcm_deref_id(struct iwcm_id_private *cm_id_priv)
 {
-	BUG_ON(atomic_read(&cm_id_priv->refcount)==0);
-	if (atomic_dec_and_test(&cm_id_priv->refcount)) {
-		BUG_ON(!list_empty(&cm_id_priv->work_list));
+	if (refcount_dec_and_test(&cm_id_priv->refcount)) {
 		free_cm_id(cm_id_priv);
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 static void add_ref(struct iw_cm_id *cm_id)
 {
 	struct iwcm_id_private *cm_id_priv;
 	cm_id_priv = container_of(cm_id, struct iwcm_id_private, id);
-	atomic_inc(&cm_id_priv->refcount);
+	refcount_inc(&cm_id_priv->refcount);
 }
 
 static void rem_ref(struct iw_cm_id *cm_id)
@@ -257,10 +252,9 @@ struct iw_cm_id *iw_create_cm_id(struct ib_device *device,
 	cm_id_priv->id.add_ref = add_ref;
 	cm_id_priv->id.rem_ref = rem_ref;
 	spin_lock_init(&cm_id_priv->lock);
-	atomic_set(&cm_id_priv->refcount, 1);
+	refcount_set(&cm_id_priv->refcount, 1);
 	init_waitqueue_head(&cm_id_priv->connect_wait);
 	init_completion(&cm_id_priv->destroy_comp);
-	INIT_LIST_HEAD(&cm_id_priv->work_list);
 	INIT_LIST_HEAD(&cm_id_priv->work_free_list);
 
 	return &cm_id_priv->id;
@@ -368,8 +362,7 @@ EXPORT_SYMBOL(iw_cm_disconnect);
 /*
  * CM_ID <-- DESTROYING
  *
- * Clean up all resources associated with the connection and release
- * the initial reference taken by iw_create_cm_id.
+ * Clean up all resources associated with the connection.
  */
 static void destroy_cm_id(struct iw_cm_id *cm_id)
 {
@@ -440,19 +433,22 @@ static void destroy_cm_id(struct iw_cm_id *cm_id)
 		iwpm_remove_mapinfo(&cm_id->local_addr, &cm_id->m_local_addr);
 		iwpm_remove_mapping(&cm_id->local_addr, RDMA_NL_IWCM);
 	}
-
-	(void)iwcm_deref_id(cm_id_priv);
 }
 
 /*
- * This function is only called by the application thread and cannot
- * be called by the event thread. The function will wait for all
- * references to be released on the cm_id and then kfree the cm_id
- * object.
+ * Destroy cm_id. If the cm_id still has other references, wait for all
+ * references to be released on the cm_id and then release the initial
+ * reference taken by iw_create_cm_id.
  */
 void iw_destroy_cm_id(struct iw_cm_id *cm_id)
 {
+	struct iwcm_id_private *cm_id_priv;
+
+	cm_id_priv = container_of(cm_id, struct iwcm_id_private, id);
 	destroy_cm_id(cm_id);
+	if (refcount_read(&cm_id_priv->refcount) > 1)
+		flush_workqueue(iwcm_wq);
+	iwcm_deref_id(cm_id_priv);
 }
 EXPORT_SYMBOL(iw_destroy_cm_id);
 
@@ -1005,13 +1001,13 @@ static int process_event(struct iwcm_id_private *cm_id_priv,
 }
 
 /*
- * Process events on the work_list for the cm_id. If the callback
- * function requests that the cm_id be deleted, a flag is set in the
- * cm_id flags to indicate that when the last reference is
- * removed, the cm_id is to be destroyed. This is necessary to
- * distinguish between an object that will be destroyed by the app
- * thread asleep on the destroy_comp list vs. an object destroyed
- * here synchronously when the last reference is removed.
+ * Process events for the cm_id. If the callback function requests
+ * that the cm_id be deleted, a flag is set in the cm_id flags to
+ * indicate that when the last reference is removed, the cm_id is
+ * to be destroyed. This is necessary to distinguish between an
+ * object that will be destroyed by the app thread asleep on the
+ * destroy_comp list vs. an object destroyed here synchronously
+ * when the last reference is removed.
  */
 static void cm_work_handler(struct work_struct *_work)
 {
@@ -1019,41 +1015,29 @@ static void cm_work_handler(struct work_struct *_work)
 	struct iw_cm_event levent;
 	struct iwcm_id_private *cm_id_priv = work->cm_id;
 	unsigned long flags;
-	int empty;
 	int ret = 0;
 
 	spin_lock_irqsave(&cm_id_priv->lock, flags);
-	empty = list_empty(&cm_id_priv->work_list);
-	while (!empty) {
-		work = list_entry(cm_id_priv->work_list.next,
-				  struct iwcm_work, list);
-		list_del_init(&work->list);
-		empty = list_empty(&cm_id_priv->work_list);
-		levent = work->event;
-		put_work(work);
-		spin_unlock_irqrestore(&cm_id_priv->lock, flags);
-
-		if (!test_bit(IWCM_F_DROP_EVENTS, &cm_id_priv->flags)) {
-			ret = process_event(cm_id_priv, &levent);
-			if (ret)
-				destroy_cm_id(&cm_id_priv->id);
-		} else
-			pr_debug("dropping event %d\n", levent.event);
-		if (iwcm_deref_id(cm_id_priv))
-			return;
-		if (empty)
-			return;
-		spin_lock_irqsave(&cm_id_priv->lock, flags);
-	}
+	levent = work->event;
+	put_work(work);
 	spin_unlock_irqrestore(&cm_id_priv->lock, flags);
+
+	if (!test_bit(IWCM_F_DROP_EVENTS, &cm_id_priv->flags)) {
+		ret = process_event(cm_id_priv, &levent);
+		if (ret) {
+			destroy_cm_id(&cm_id_priv->id);
+			WARN_ON_ONCE(iwcm_deref_id(cm_id_priv));
+		}
+	} else
+		pr_debug("dropping event %d\n", levent.event);
+	if (iwcm_deref_id(cm_id_priv))
+		return;
 }
 
 /*
  * This function is called on interrupt context. Schedule events on
  * the iwcm_wq thread to allow callback functions to downcall into
- * the CM and/or block.  Events are queued to a per-CM_ID
- * work_list. If this is the first event on the work_list, the work
- * element is also queued on the iwcm_wq thread.
+ * the CM and/or block.
  *
  * Each event holds a reference on the cm_id. Until the last posted
  * event has been delivered and processed, the cm_id cannot be
@@ -1094,12 +1078,8 @@ static int cm_event_handler(struct iw_cm_id *cm_id,
 		}
 	}
 
-	atomic_inc(&cm_id_priv->refcount);
-	if (list_empty(&cm_id_priv->work_list)) {
-		list_add_tail(&work->list, &cm_id_priv->work_list);
-		queue_work(iwcm_wq, &work->work);
-	} else
-		list_add_tail(&work->list, &cm_id_priv->work_list);
+	refcount_inc(&cm_id_priv->refcount);
+	queue_work(iwcm_wq, &work->work);
 out:
 	spin_unlock_irqrestore(&cm_id_priv->lock, flags);
 	return ret;
@@ -1187,29 +1167,34 @@ static int __init iw_cm_init(void)
 
 	ret = iwpm_init(RDMA_NL_IWCM);
 	if (ret)
-		pr_err("iw_cm: couldn't init iwpm\n");
-	else
-		rdma_nl_register(RDMA_NL_IWCM, iwcm_nl_cb_table);
-	iwcm_wq = alloc_ordered_workqueue("iw_cm_wq", 0);
+		return ret;
+
+	iwcm_wq = alloc_ordered_workqueue("iw_cm_wq", WQ_MEM_RECLAIM);
 	if (!iwcm_wq)
-		return -ENOMEM;
+		goto err_alloc;
 
 	iwcm_ctl_table_hdr = register_net_sysctl(&init_net, "net/iw_cm",
 						 iwcm_ctl_table);
 	if (!iwcm_ctl_table_hdr) {
 		pr_err("iw_cm: couldn't register sysctl paths\n");
-		destroy_workqueue(iwcm_wq);
-		return -ENOMEM;
+		goto err_sysctl;
 	}
 
+	rdma_nl_register(RDMA_NL_IWCM, iwcm_nl_cb_table);
 	return 0;
+
+err_sysctl:
+	destroy_workqueue(iwcm_wq);
+err_alloc:
+	iwpm_exit(RDMA_NL_IWCM);
+	return -ENOMEM;
 }
 
 static void __exit iw_cm_cleanup(void)
 {
+	rdma_nl_unregister(RDMA_NL_IWCM);
 	unregister_net_sysctl_table(iwcm_ctl_table_hdr);
 	destroy_workqueue(iwcm_wq);
-	rdma_nl_unregister(RDMA_NL_IWCM);
 	iwpm_exit(RDMA_NL_IWCM);
 }
 

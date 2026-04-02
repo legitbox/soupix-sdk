@@ -21,7 +21,12 @@ struct tnum {
 struct tnum tnum_const(u64 value);
 /* A completely unknown value */
 extern const struct tnum tnum_unknown;
-/* A value that's unknown except that @min <= value <= @max */
+/* An unknown value that is a superset of @min <= value <= @max.
+ *
+ * Could include values outside the range of [@min, @max].
+ * For example tnum_range(0, 2) is represented by {0, 1, 2, *3*},
+ * rather than the intended set of {0, 1, 2}.
+ */
 struct tnum tnum_range(u64 min, u64 max);
 
 /* Arithmetic and logical ops */
@@ -43,6 +48,9 @@ struct tnum tnum_or(struct tnum a, struct tnum b);
 struct tnum tnum_xor(struct tnum a, struct tnum b);
 /* Multiply two tnums, return @a * @b */
 struct tnum tnum_mul(struct tnum a, struct tnum b);
+
+/* Return true if the known bits of both tnums have the same value */
+bool tnum_overlap(struct tnum a, struct tnum b);
 
 /* Return a tnum representing numbers satisfying both @a and @b */
 struct tnum tnum_intersect(struct tnum a, struct tnum b);
@@ -73,7 +81,18 @@ static inline bool tnum_is_unknown(struct tnum a)
  */
 bool tnum_is_aligned(struct tnum a, u64 size);
 
-/* Returns true if @b represents a subset of @a. */
+/* Returns true if @b represents a subset of @a.
+ *
+ * Note that using tnum_range() as @a requires extra cautions as tnum_in() may
+ * return true unexpectedly due to tnum limited ability to represent tight
+ * range, e.g.
+ *
+ *   tnum_in(tnum_range(0, 2), tnum_const(3)) == true
+ *
+ * As a rule of thumb, if @a is explicitly coded rather than coming from
+ * reg->var_off, it should be in form of tnum_const(), tnum_range(0, 2**n - 1),
+ * or tnum_range(2**n, 2**(n+1) - 1).
+ */
 bool tnum_in(struct tnum a, struct tnum b);
 
 /* Formatting functions.  These have snprintf-like semantics: they will write
@@ -90,6 +109,10 @@ int tnum_sbin(char *str, size_t size, struct tnum a);
 struct tnum tnum_subreg(struct tnum a);
 /* Returns the tnum with the lower 32-bit subreg cleared */
 struct tnum tnum_clear_subreg(struct tnum a);
+/* Returns the tnum with the lower 32-bit subreg in *reg* set to the lower
+ * 32-bit subreg in *subreg*
+ */
+struct tnum tnum_with_subreg(struct tnum reg, struct tnum subreg);
 /* Returns the tnum with the lower 32-bit subreg set to value */
 struct tnum tnum_const_subreg(struct tnum a, u32 value);
 /* Returns true if 32-bit subreg @a is a known constant*/

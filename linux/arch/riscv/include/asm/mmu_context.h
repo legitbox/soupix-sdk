@@ -12,38 +12,29 @@
 
 #include <linux/mm.h>
 #include <linux/sched.h>
-#include <asm/tlbflush.h>
-#include <asm/cacheflush.h>
-#include <asm/asid.h>
-
-#define ASID_MASK		((1 << SATP_ASID_BITS) - 1)
-#define cpu_asid(mm)		(atomic64_read(&mm->context.asid) & ASID_MASK)
-
-#define init_new_context(tsk,mm)	({ atomic64_set(&(mm)->context.asid, 0); 0; })
-
-static inline void enter_lazy_tlb(struct mm_struct *mm,
-	struct task_struct *task)
-{
-}
-
-static inline void destroy_context(struct mm_struct *mm)
-{
-}
 
 void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	struct task_struct *task);
 
-void check_and_switch_context(struct mm_struct *mm, unsigned int cpu);
-
+#define activate_mm activate_mm
 static inline void activate_mm(struct mm_struct *prev,
 			       struct mm_struct *next)
 {
 	switch_mm(prev, next, NULL);
 }
 
-static inline void deactivate_mm(struct task_struct *task,
-	struct mm_struct *mm)
+#define init_new_context init_new_context
+static inline int init_new_context(struct task_struct *tsk,
+			struct mm_struct *mm)
 {
+#ifdef CONFIG_MMU
+	atomic_long_set(&mm->context.id, 0);
+#endif
+	return 0;
 }
+
+DECLARE_STATIC_KEY_FALSE(use_asid_allocator);
+
+#include <asm-generic/mmu_context.h>
 
 #endif /* _ASM_RISCV_MMU_CONTEXT_H */

@@ -6,7 +6,11 @@
 #ifndef _ASM_RISCV_SWITCH_TO_H
 #define _ASM_RISCV_SWITCH_TO_H
 
+#include <linux/jump_label.h>
 #include <linux/sched/task_stack.h>
+#include <linux/mm_types.h>
+#include <asm/vector.h>
+#include <asm/cpufeature.h>
 #include <asm/processor.h>
 #include <asm/ptrace.h>
 #include <asm/csr.h>
@@ -44,82 +48,61 @@ static inline void fstate_restore(struct task_struct *task,
 	}
 }
 
-static inline void __switch_to_aux(struct task_struct *prev,
+static inline void __switch_to_fpu(struct task_struct *prev,
 				   struct task_struct *next)
 {
 	struct pt_regs *regs;
 
 	regs = task_pt_regs(prev);
-	if (unlikely(regs->status & SR_SD))
-		fstate_save(prev, regs);
+	fstate_save(prev, regs);
 	fstate_restore(next, task_pt_regs(next));
 }
 
-extern bool has_fpu;
+static __always_inline bool has_fpu(void)
+{
+	return riscv_has_extension_likely(RISCV_ISA_EXT_f) ||
+		riscv_has_extension_likely(RISCV_ISA_EXT_d);
+}
 #else
-#define has_fpu false
+static __always_inline bool has_fpu(void) { return false; }
 #define fstate_save(task, regs) do { } while (0)
 #define fstate_restore(task, regs) do { } while (0)
-#define __switch_to_aux(__prev, __next) do { } while (0)
-#endif
-
-#ifdef CONFIG_VECTOR
-extern void __vstate_save(struct task_struct *save_to);
-extern void __vstate_restore(struct task_struct *restore_from);
-
-static inline void __vstate_clean(struct pt_regs *regs)
-{
-	regs->status |= (regs->status & ~(SR_VS)) | SR_VS_CLEAN;
-}
-
-static inline void vstate_save(struct task_struct *task,
-			       struct pt_regs *regs)
-{
-	if ((regs->status & SR_VS) == SR_VS_DIRTY) {
-		__vstate_save(task);
-		__vstate_clean(regs);
-	}
-}
-
-static inline void vstate_restore(struct task_struct *task,
-				  struct pt_regs *regs)
-{
-	if ((regs->status & SR_VS) != SR_VS_OFF) {
-		__vstate_restore(task);
-		__vstate_clean(regs);
-	}
-}
-
-static inline void __switch_to_vector(struct task_struct *prev,
-				   struct task_struct *next)
-{
-	struct pt_regs *regs;
-
-	regs = task_pt_regs(prev);
-	if (unlikely(regs->status & SR_SD))
-		vstate_save(prev, regs);
-	vstate_restore(next, task_pt_regs(next));
-}
-
-extern bool has_vector;
-#else
-#define has_vector false
-#define vstate_save(task, regs) do { } while (0)
-#define vstate_restore(task, regs) do { } while (0)
-#define __switch_to_vector(__prev, __next) do { } while (0)
+#define __switch_to_fpu(__prev, __next) do { } while (0)
 #endif
 
 extern struct task_struct *__switch_to(struct task_struct *,
 				       struct task_struct *);
 
+static inline bool switch_to_should_flush_icache(struct task_struct *task)
+{
+#ifdef CONFIG_SMP
+	bool stale_mm = task->mm && task->mm->context.force_icache_flush;
+	bool stale_thread = task->thread.force_icache_flush;
+	bool thread_migrated = smp_processor_id() != task->thread.prev_cpu;
+
+	return thread_migrated && (stale_mm || stale_thread);
+#else
+	return false;
+#endif
+}
+
+#ifdef CONFIG_SMP
+#define __set_prev_cpu(thread) ((thread).prev_cpu = smp_processor_id())
+#else
+#define __set_prev_cpu(thread)
+#endif
+
 #define switch_to(prev, next, last)			\
 do {							\
 	struct task_struct *__prev = (prev);		\
 	struct task_struct *__next = (next);		\
-	if (has_fpu)					\
-		__switch_to_aux(__prev, __next);	\
-	if (has_vector)					\
+	__set_prev_cpu(__prev->thread);			\
+	if (has_fpu())					\
+		__switch_to_fpu(__prev, __next);	\
+	if (has_vector())					\
 		__switch_to_vector(__prev, __next);	\
+	if (switch_to_should_flush_icache(__next))	\
+		local_flush_icache_all();		\
 	((last) = __switch_to(__prev, __next));		\
 } while (0)
 

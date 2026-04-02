@@ -3,7 +3,6 @@
 #define __ACPI_NUMA_H
 
 #ifdef CONFIG_ACPI_NUMA
-#include <linux/kernel.h>
 #include <linux/numa.h>
 
 /* Proximity bitmap length */
@@ -18,15 +17,24 @@ extern int node_to_pxm(int);
 extern int acpi_map_pxm_to_node(int);
 extern unsigned char acpi_srat_revision;
 extern void disable_srat(void);
+extern int fix_pxm_node_maps(int max_nid);
 
 extern void bad_srat(void);
 extern int srat_disabled(void);
 
 #else				/* CONFIG_ACPI_NUMA */
+static inline int fix_pxm_node_maps(int max_nid)
+{
+	return 0;
+}
 static inline void disable_srat(void)
 {
 }
 static inline int pxm_to_node(int pxm)
+{
+	return 0;
+}
+static inline int node_to_pxm(int node)
 {
 	return 0;
 }
@@ -39,4 +47,4 @@ static inline void disable_hmat(void)
 {
 }
 #endif				/* CONFIG_ACPI_HMAT */
-#endif				/* __ACP_NUMA_H */
+#endif				/* __ACPI_NUMA_H */

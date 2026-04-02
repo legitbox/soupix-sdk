@@ -179,12 +179,11 @@ static struct libipw_txb *libipw_alloc_txb(int nr_frags, int txb_size,
 {
 	struct libipw_txb *txb;
 	int i;
-	txb = kmalloc(sizeof(struct libipw_txb) + (sizeof(u8 *) * nr_frags),
-		      gfp_mask);
+
+	txb = kzalloc(struct_size(txb, fragments, nr_frags), gfp_mask);
 	if (!txb)
 		return NULL;
 
-	memset(txb, 0, sizeof(struct libipw_txb));
 	txb->nr_frags = nr_frags;
 	txb->frag_size = txb_size;
 
@@ -383,7 +382,7 @@ netdev_tx_t libipw_xmit(struct sk_buff *skb, struct net_device *dev)
 
 		/* Each fragment may need to have room for encryption
 		 * pre/postfix */
-		if (host_encrypt)
+		if (host_encrypt && crypt && crypt->ops)
 			bytes_per_frag -= crypt->ops->extra_mpdu_prefix_len +
 			    crypt->ops->extra_mpdu_postfix_len;
 

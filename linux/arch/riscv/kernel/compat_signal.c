@@ -4,20 +4,19 @@
 #include <linux/signal.h>
 #include <linux/uaccess.h>
 #include <linux/syscalls.h>
-#include <linux/tracehook.h>
 #include <linux/linkage.h>
 
+#include <asm/csr.h>
+#include <asm/signal32.h>
+#include <asm/switch_to.h>
 #include <asm/ucontext.h>
 #include <asm/vdso.h>
-#include <asm/switch_to.h>
-#include <asm/csr.h>
 
 #define COMPAT_DEBUG_SIG 0
 
 struct compat_sigcontext {
 	struct compat_user_regs_struct sc_regs;
 	union __riscv_fp_state sc_fpregs;
-	struct __riscv_v_state sc_vregs;
 };
 
 struct compat_ucontext {
@@ -100,40 +99,6 @@ static long compat_save_fp_state(struct pt_regs *regs,
 #define compat_restore_fp_state(task, regs) (0)
 #endif
 
-#ifdef CONFIG_VECTOR
-static long compat_restore_v_state(struct pt_regs *regs,
-			    struct __riscv_v_state *sc_vregs)
-{
-	long err;
-	struct __riscv_v_state __user *state = sc_vregs;
-
-	err = __copy_from_user(&current->thread.vstate, state, sizeof(*state));
-	if (unlikely(err))
-		return err;
-
-	vstate_restore(current, regs);
-
-	return err;
-}
-
-static long compat_save_v_state(struct pt_regs *regs,
-			 struct __riscv_v_state *sc_vregs)
-{
-	long err;
-	struct __riscv_v_state __user *state = sc_vregs;
-
-	vstate_save(current, regs);
-	err = __copy_to_user(state, &current->thread.vstate, sizeof(*state));
-	if (unlikely(err))
-		return err;
-
-	return err;
-}
-#else
-#define compat_save_v_state(task, regs) (0)
-#define compat_restore_v_state(task, regs) (0)
-#endif
-
 static long compat_restore_sigcontext(struct pt_regs *regs,
 	struct compat_sigcontext __user *sc)
 {
@@ -146,13 +111,8 @@ static long compat_restore_sigcontext(struct pt_regs *regs,
 	cregs_to_regs(&cregs, regs);
 
 	/* Restore the floating-point state. */
-	if (has_fpu)
+	if (has_fpu())
 		err |= compat_restore_fp_state(regs, &sc->sc_fpregs);
-
-	/* Restore the vector state. */
-	if (has_vector)
-		err |= compat_restore_v_state(regs, &sc->sc_vregs);
-
 	return err;
 }
 
@@ -208,12 +168,8 @@ static long compat_setup_sigcontext(struct compat_rt_sigframe __user *frame,
 	/* sc_regs is structured the same as the start of pt_regs */
 	err = __copy_to_user(&sc->sc_regs, &cregs, sizeof(sc->sc_regs));
 	/* Save the floating-point state. */
-	if (has_fpu)
+	if (has_fpu())
 		err |= compat_save_fp_state(regs, &sc->sc_fpregs);
-	/* Save the vector state. */
-	if (has_vector)
-		err |= compat_save_v_state(regs, &sc->sc_vregs);
-
 	return err;
 }
 

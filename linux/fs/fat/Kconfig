@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
 config FAT_FS
 	tristate
+	select BUFFER_HEAD
 	select NLS
+	select LEGACY_DIRECT_IO
 	help
 	  If you want to use one of the FAT-based file systems (the MS-DOS and
 	  VFAT (Windows 95) file systems), then you must say Y or M here
@@ -77,7 +79,7 @@ config VFAT_FS
 
 config FAT_DEFAULT_CODEPAGE
 	int "Default codepage for FAT"
-	depends on MSDOS_FS || VFAT_FS
+	depends on FAT_FS
 	default 437
 	help
 	  This option should be set to the codepage of your FAT filesystems.
@@ -116,18 +118,14 @@ config FAT_DEFAULT_UTF8
 
 	  See <file:Documentation/filesystems/vfat.rst> for more information.
 
-config FATFS_UPDATE_TIME
-	bool "Enable FATFS UPDATE FILE TIME"
-	default y
+config FAT_KUNIT_TEST
+	tristate "Unit Tests for FAT filesystems" if !KUNIT_ALL_TESTS
+	depends on KUNIT && FAT_FS
+	default KUNIT_ALL_TESTS
 	help
-	  Set this to N if you want disable fatfs auto update file node time including
-	  last access time and last modify time.
+	  This builds the FAT KUnit tests
 
-config FATFS_USE_FAST_PREALLOC
-	bool "FATFS use fast prealloc mode"
-	default n
-	help
-	  To accelerate the preallocation speed for FATFS, this configuration
-	  option allows for the allocation of clusters without performing an erase operation.
-	  By directly allocating the specified number of clusters to the set size,
-	  it reduces the time taken for preallocation.
+	  For more information on KUnit and unit tests in general, please refer
+	  to the KUnit documentation in Documentation/dev-tools/kunit
+
+	  If unsure, say N

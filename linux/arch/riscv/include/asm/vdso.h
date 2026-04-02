@@ -8,13 +8,16 @@
 #ifndef _ASM_RISCV_VDSO_H
 #define _ASM_RISCV_VDSO_H
 
-#include <linux/types.h>
-#include <generated/vdso-offsets.h>
+/*
+ * All systems with an MMU have a VDSO, but systems without an MMU don't
+ * support shared libraries and therefore don't have one.
+ */
+#ifdef CONFIG_MMU
 
-#ifndef GENERIC_TIME_VSYSCALL
-struct vdso_data {
-};
-#endif
+#define __VVAR_PAGES    2
+
+#ifndef __ASSEMBLY__
+#include <generated/vdso-offsets.h>
 
 #define VDSO_SYMBOL(base, name)							\
 	(void __user *)((unsigned long)(base) + __vdso_##name##_offset)
@@ -25,8 +28,14 @@ struct vdso_data {
 #define COMPAT_VDSO_SYMBOL(base, name)						\
 	(void __user *)((unsigned long)(base) + compat__vdso_##name##_offset)
 
+extern char compat_vdso_start[], compat_vdso_end[];
+
 #endif /* CONFIG_COMPAT */
 
-asmlinkage long sys_riscv_flush_icache(uintptr_t, uintptr_t, uintptr_t);
+extern char vdso_start[], vdso_end[];
+
+#endif /* !__ASSEMBLY__ */
+
+#endif /* CONFIG_MMU */
 
 #endif /* _ASM_RISCV_VDSO_H */

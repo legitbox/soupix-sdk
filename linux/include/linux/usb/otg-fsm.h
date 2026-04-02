@@ -1,27 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0+
-/* Copyright (C) 2007,2008 Freescale Semiconductor, Inc.
- *
- * This program is free software; you can redistribute  it and/or modify it
- * under  the terms of  the GNU General  Public License as published by the
- * Free Software Foundation;  either version 2 of the  License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the  GNU General Public License along
- * with this program; if not, write  to the Free Software Foundation, Inc.,
- * 675 Mass Ave, Cambridge, MA 02139, USA.
+/*
+ * Copyright (C) 2007,2008 Freescale Semiconductor, Inc.
  */
 
 #ifndef __LINUX_USB_OTG_FSM_H
 #define __LINUX_USB_OTG_FSM_H
 
-#if defined(CONFIG_CVITEK_USB_LEGACY)
-#include <linux/device.h>
-#endif
 #include <linux/mutex.h>
 #include <linux/errno.h>
 
@@ -38,11 +22,8 @@
 					 * OTG and EH 2.0 Charpter 6.2.3
 					 * Table:6-5
 					 */
-#if defined(CONFIG_CVITEK_USB_LEGACY) && defined(USB_SIM_SPEED_UP)
-#define T_HOST_REQ_POLL		(10)
-#else
+
 #define T_HOST_REQ_POLL		(1500)	/* 1500ms, HNP polling interval */
-#endif
 
 enum otg_fsm_timer {
 	/* Standard OTG timers */
@@ -75,13 +56,11 @@ enum otg_fsm_timer {
  *		ADP measurement taken at n-2, differs by more than CADP_THR
  * @power_up:	TRUE when the OTG device first powers up its USB system and
  *		ADP measurement taken if ADP capable
- * @overcurrent: TRUE when overcurrent condition detected
  *
  *	A-Device state inputs
  * @a_srp_det:	TRUE if the A-device detects SRP
  * @a_vbus_vld:	TRUE when VBUS voltage is in regulation
  * @b_conn:	TRUE if the A-device detects connection from the B-device
- * @a_srp_det_not_compliant_dev: TRUE if A-device detected not compliant device
  * @a_bus_resume: TRUE when the B-device detects that the A-device is signaling
  *		  a resume (K state)
  *	B-Device state inputs
@@ -106,7 +85,7 @@ enum otg_fsm_timer {
  * @b_bus_req:	TRUE during the time that the Application running on the
  *		B-device wants to use the bus
  *
- *	Auxilary inputs (OTG v1.3 only. Obsolete now.)
+ *	Auxiliary inputs (OTG v1.3 only. Obsolete now.)
  * @a_sess_vld:	TRUE if the A-device detects that VBUS is above VA_SESS_VLD
  * @b_bus_suspend: TRUE when the A-device detects that the B-device has put
  *		the bus into suspend
@@ -141,21 +120,12 @@ enum otg_fsm_timer {
  * a_clr_err:	Asserted (by application ?) to clear a_vbus_err due to an
  *		overcurrent condition and causes the A-device to transition
  *		to a_wait_vfall
- *
- *       Timers
- * @a_bidl_adis_tmout: TRUE when TA_BIDL_ADIS timer interrupt occurs
- * @b_aidl_bdis_tmout: TRUE when TB_AIDL_BDIS timer interrupt occurs
- *
  */
 struct otg_fsm {
 	/* Input */
 	int id;
 	int adp_change;
 	int power_up;
-#if defined(CONFIG_CVITEK_USB_LEGACY)
-	int overcurrent;
-	int a_srp_det_not_compliant_dev;
-#endif
 	int a_srp_det;
 	int a_vbus_vld;
 	int b_conn;
@@ -170,7 +140,7 @@ struct otg_fsm {
 	int a_bus_req;
 	int b_bus_req;
 
-	/* Auxilary inputs */
+	/* Auxiliary inputs */
 	int a_sess_vld;
 	int b_bus_resume;
 	int b_bus_suspend;
@@ -194,7 +164,7 @@ struct otg_fsm {
 	int a_bus_req_inf;
 	int a_clr_err_inf;
 	int b_bus_req_inf;
-	/* Auxilary informative variables */
+	/* Auxiliary informative variables */
 	int a_suspend_req_inf;
 
 	/* Timeout indicator for timers */
@@ -204,9 +174,6 @@ struct otg_fsm {
 	int a_aidl_bdis_tmout;
 	int b_ase0_brst_tmout;
 	int a_bidl_adis_tmout;
-#if defined(CONFIG_CVITEK_USB_LEGACY)
-	int b_aidl_bdis_tmout;
-#endif
 
 	struct otg_fsm_ops *ops;
 	struct usb_otg *otg;
@@ -216,11 +183,8 @@ struct otg_fsm {
 	struct mutex lock;
 	u8 *host_req_flag;
 	struct delayed_work hnp_polling_work;
+	bool hnp_work_inited;
 	bool state_changed;
-#if defined(CONFIG_CVITEK_USB_LEGACY)
-	/* for debug prints */
-	struct device *dev;
-#endif
 };
 
 struct otg_fsm_ops {
@@ -235,9 +199,6 @@ struct otg_fsm_ops {
 	void	(*del_timer)(struct otg_fsm *fsm, enum otg_fsm_timer timer);
 	int	(*start_host)(struct otg_fsm *fsm, int on);
 	int	(*start_gadget)(struct otg_fsm *fsm, int on);
-#if defined(CONFIG_CVITEK_USB_LEGACY)
-	int	(*start_enum)(struct usb_bus *bus, unsigned int port_num);
-#endif
 };
 
 

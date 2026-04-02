@@ -213,12 +213,8 @@ void sp_destroy(struct sp_device *sp)
 
 int sp_suspend(struct sp_device *sp)
 {
-	int ret;
-
 	if (sp->dev_vdata->ccp_vdata) {
-		ret = ccp_dev_suspend(sp);
-		if (ret)
-			return ret;
+		ccp_dev_suspend(sp);
 	}
 
 	return 0;
@@ -226,15 +222,23 @@ int sp_suspend(struct sp_device *sp)
 
 int sp_resume(struct sp_device *sp)
 {
-	int ret;
-
 	if (sp->dev_vdata->ccp_vdata) {
-		ret = ccp_dev_resume(sp);
+		ccp_dev_resume(sp);
+	}
+
+	return 0;
+}
+
+int sp_restore(struct sp_device *sp)
+{
+	if (sp->psp_data) {
+		int ret = psp_restore(sp);
+
 		if (ret)
 			return ret;
 	}
 
-	return 0;
+	return sp_resume(sp);
 }
 
 struct sp_device *sp_get_psp_master_device(void)

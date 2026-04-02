@@ -1,13 +1,18 @@
-// SPDX-License-Identifier: (GPL-2.0 or BSD-3-Clause)
+// SPDX-License-Identifier: (GPL-2.0 OR BSD-3-Clause)
 /*
  *Copyright(c) 2018 Broadcom
  */
 	usb {
 		compatible = "simple-bus";
-		dma-ranges;
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges = <0x0 0x0 0x0 0x68500000 0x0 0x00400000>;
+
+		/*
+		 * Internally, USB bus to the interconnect can only address up
+		 * to 40-bit
+		 */
+		dma-ranges = <0 0 0 0 0x100 0x0>;
 
 		usbphy0: usb-phy@0 {
 			compatible = "brcm,sr-usb-combo-phy";

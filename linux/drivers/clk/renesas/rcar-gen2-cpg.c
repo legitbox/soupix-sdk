@@ -30,7 +30,7 @@
 #define CPG_ADSPCKCR		0x025c
 #define CPG_RCANCKCR		0x0270
 
-static spinlock_t cpg_lock;
+static DEFINE_SPINLOCK(cpg_lock);
 
 /*
  * Z Clock
@@ -137,7 +137,7 @@ static struct clk * __init cpg_z_clk_register(const char *name,
 					      const char *parent_name,
 					      void __iomem *base)
 {
-	struct clk_init_data init;
+	struct clk_init_data init = {};
 	struct cpg_z_clk *zclk;
 	struct clk *clk;
 
@@ -147,7 +147,6 @@ static struct clk * __init cpg_z_clk_register(const char *name,
 
 	init.name = name;
 	init.ops = &cpg_z_clk_ops;
-	init.flags = 0;
 	init.parent_names = &parent_name;
 	init.num_parents = 1;
 
@@ -275,10 +274,11 @@ static const struct soc_device_attribute cpg_quirks_match[] __initconst = {
 
 struct clk * __init rcar_gen2_cpg_clk_register(struct device *dev,
 	const struct cpg_core_clk *core, const struct cpg_mssr_info *info,
-	struct clk **clks, void __iomem *base,
-	struct raw_notifier_head *notifiers)
+	struct cpg_mssr_pub *pub)
 {
 	const struct clk_div_table *table = NULL;
+	void __iomem *base = pub->base0;
+	struct clk **clks = pub->clks;
 	const struct clk *parent;
 	const char *parent_name;
 	unsigned int mult = 1;
@@ -387,8 +387,6 @@ int __init rcar_gen2_cpg_init(const struct rcar_gen2_cpg_pll_config *config,
 	if (attr)
 		cpg_quirks = (uintptr_t)attr->data;
 	pr_debug("%s: mode = 0x%x quirks = 0x%x\n", __func__, mode, cpg_quirks);
-
-	spin_lock_init(&cpg_lock);
 
 	return 0;
 }

@@ -16,7 +16,7 @@
 enum probe_insn __kprobes
 riscv_probe_decode_insn(probe_opcode_t *addr, struct arch_probe_insn *api)
 {
-	probe_opcode_t insn = le32_to_cpu(*addr);
+	probe_opcode_t insn = *addr;
 
 	/*
 	 * Reject instructions list:
@@ -29,20 +29,20 @@ riscv_probe_decode_insn(probe_opcode_t *addr, struct arch_probe_insn *api)
 	 * TODO: the REJECTED ones below need to be implemented
 	 */
 #ifdef CONFIG_RISCV_ISA_C
-	RISCV_INSN_REJECTED(c_j,		insn);
-	RISCV_INSN_REJECTED(c_jr,		insn);
 	RISCV_INSN_REJECTED(c_jal,		insn);
-	RISCV_INSN_REJECTED(c_jalr,		insn);
-	RISCV_INSN_REJECTED(c_beqz,		insn);
-	RISCV_INSN_REJECTED(c_bnez,		insn);
 	RISCV_INSN_REJECTED(c_ebreak,		insn);
-#endif
 
-	RISCV_INSN_REJECTED(auipc,		insn);
-	RISCV_INSN_REJECTED(branch,		insn);
+	RISCV_INSN_SET_SIMULATE(c_j,		insn);
+	RISCV_INSN_SET_SIMULATE(c_jr,		insn);
+	RISCV_INSN_SET_SIMULATE(c_jalr,		insn);
+	RISCV_INSN_SET_SIMULATE(c_beqz,		insn);
+	RISCV_INSN_SET_SIMULATE(c_bnez,		insn);
+#endif
 
 	RISCV_INSN_SET_SIMULATE(jal,		insn);
 	RISCV_INSN_SET_SIMULATE(jalr,		insn);
+	RISCV_INSN_SET_SIMULATE(auipc,		insn);
+	RISCV_INSN_SET_SIMULATE(branch,		insn);
 
 	return INSN_GOOD;
 }
