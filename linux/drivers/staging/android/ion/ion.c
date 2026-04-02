@@ -24,7 +24,7 @@
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
 #include <linux/genalloc.h>
-#include <trace/events/kmem.h>
+#include <linux/iosys-map.h>
 #ifdef CONFIG_COMPAT
 #include "compat_ion.h"
 #endif
@@ -69,7 +69,6 @@ static struct ion_buffer *ion_buffer_create(struct ion_heap *heap,
 					    unsigned long flags)
 {
 	struct ion_buffer *buffer;
-	u64 pre_num_of_alloc_bytes;
 	int ret;
 
 	buffer = kzalloc(sizeof(*buffer), GFP_KERNEL);
@@ -100,11 +99,6 @@ static struct ion_buffer *ion_buffer_create(struct ion_heap *heap,
 	}
 
 	spin_lock(&heap->stat_lock);
-	pre_num_of_alloc_bytes = heap->num_of_alloc_bytes;
-	spin_unlock(&heap->stat_lock);
-	trace_ion_heap_grow(heap->name, len, pre_num_of_alloc_bytes);
-
-	spin_lock(&heap->stat_lock);
 	heap->num_of_buffers++;
 	heap->num_of_alloc_bytes += len;
 	if (heap->num_of_alloc_bytes > heap->alloc_bytes_wm)
@@ -128,20 +122,12 @@ err2:
 
 void ion_buffer_destroy(struct ion_buffer *buffer)
 {
-	u64 pre_num_of_alloc_bytes;
-
 	if (buffer->kmap_cnt > 0) {
 		pr_warn_once("%s: buffer still mapped in the kernel\n",
 			     __func__);
 		buffer->heap->ops->unmap_kernel(buffer->heap, buffer);
 	}
 	buffer->heap->ops->free(buffer);
-
-	spin_lock(&buffer->heap->stat_lock);
-	pre_num_of_alloc_bytes = buffer->heap->num_of_alloc_bytes;
-	spin_unlock(&buffer->heap->stat_lock);
-	trace_ion_heap_shrink(buffer->heap->name, buffer->size,
-			      pre_num_of_alloc_bytes);
 
 	spin_lock(&buffer->heap->stat_lock);
 	buffer->heap->num_of_buffers--;
@@ -332,15 +318,20 @@ static void ion_dma_buf_release(struct dma_buf *dmabuf)
 	_ion_buffer_destroy(buffer);
 }
 
-static void *ion_dma_buf_vmap(struct dma_buf *dmabuf)
+static int ion_dma_buf_vmap(struct dma_buf *dmabuf, struct iosys_map *map)
 {
 	struct ion_buffer *buffer = dmabuf->priv;
 
-	return buffer->vaddr;
+	if (!buffer->vaddr)
+		return -EINVAL;
+
+	iosys_map_set_vaddr(map, buffer->vaddr);
+	return 0;
 }
 
-static void ion_dma_buf_vunmap(struct dma_buf *dmabuf, void *ptr)
+static void ion_dma_buf_vunmap(struct dma_buf *dmabuf, struct iosys_map *map)
 {
+	iosys_map_clear(map);
 }
 
 static int ion_dma_buf_begin_cpu_access(struct dma_buf *dmabuf,
@@ -854,15 +845,18 @@ static int debug_shrink_set(void *data, u64 val)
 	struct shrink_control sc;
 	int objs;
 
+	if (!heap->shrinker)
+		return -EINVAL;
+
 	sc.gfp_mask = GFP_HIGHUSER;
 	sc.nr_to_scan = val;
 
 	if (!val) {
-		objs = heap->shrinker.count_objects(&heap->shrinker, &sc);
+		objs = heap->shrinker->count_objects(heap->shrinker, &sc);
 		sc.nr_to_scan = objs;
 	}
 
-	heap->shrinker.scan_objects(&heap->shrinker, &sc);
+	heap->shrinker->scan_objects(heap->shrinker, &sc);
 	return 0;
 }
 
@@ -872,10 +866,13 @@ static int debug_shrink_get(void *data, u64 *val)
 	struct shrink_control sc;
 	int objs;
 
+	if (!heap->shrinker)
+		return -EINVAL;
+
 	sc.gfp_mask = GFP_HIGHUSER;
 	sc.nr_to_scan = 0;
 
-	objs = heap->shrinker.count_objects(&heap->shrinker, &sc);
+	objs = heap->shrinker->count_objects(heap->shrinker, &sc);
 	*val = objs;
 	return 0;
 }
@@ -925,8 +922,8 @@ void ion_device_add_heap(struct ion_heap *heap)
 			   heap_root,
 			   &heap->alloc_bytes_wm);
 
-	if (heap->shrinker.count_objects &&
-	    heap->shrinker.scan_objects) {
+	if (heap->shrinker && heap->shrinker->count_objects &&
+	    heap->shrinker->scan_objects) {
 		snprintf(debug_name, 64, "%s_shrink", heap->name);
 		debugfs_create_file(debug_name,
 				    0644,
@@ -982,10 +979,10 @@ static int ion_device_create(void)
 }
 subsys_initcall(ion_device_create);
 #ifdef CONFIG_ION_CVITEK
-#include <linux/syscalls.h>
+#include <linux/fdtable.h>
 void ion_free(pid_t pid, int fd)
 {
-	ksys_close(fd);
+	close_fd(fd);
 }
 EXPORT_SYMBOL(ion_free);
 #endif

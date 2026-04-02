@@ -21,38 +21,6 @@ void *ion_heap_map_kernel(struct ion_heap *heap,
 {
 	void *vaddr;
 
-#if defined(CONFIG_ARM) || defined(__arm__) || defined(__aarch64__)
-	pr_debug("%s addr=0x%llx, size=%lu\n", __func__, buffer->paddr, PAGE_ALIGN(buffer->size));
-
-	struct sg_page_iter piter;
-	pgprot_t pgprot;
-	struct sg_table *table = buffer->sg_table;
-	int npages = PAGE_ALIGN(buffer->size) / PAGE_SIZE;
-	struct page **pages = vmalloc(array_size(npages,
-						 sizeof(struct page *)));
-	struct page **tmp = pages;
-
-	if (!pages)
-		return ERR_PTR(-ENOMEM);
-
-	if (buffer->flags & ION_FLAG_CACHED)
-		pgprot = PAGE_KERNEL;
-	else
-		pgprot = pgprot_writecombine(PAGE_KERNEL);
-
-	for_each_sgtable_page(table, &piter, 0) {
-		WARN_ON(tmp - pages >= npages);
-		*tmp++ = sg_page_iter_page(&piter);
-	}
-
-	vaddr = vmap(pages, npages, VM_MAP, pgprot);
-	vfree(pages);
-
-	if (!vaddr)
-		return ERR_PTR(-ENOMEM);
-
-#else
-
 	pr_debug("%s addr=0x%llx, size=%lu\n", __func__, buffer->paddr, PAGE_ALIGN(buffer->size));
 
 	if (buffer->flags & ION_FLAG_CACHED)
@@ -65,22 +33,16 @@ void *ion_heap_map_kernel(struct ion_heap *heap,
 		return ERR_PTR(-ENOMEM);
 	}
 
-#endif
 	return vaddr;
 }
 
 void ion_heap_unmap_kernel(struct ion_heap *heap,
 			   struct ion_buffer *buffer)
 {
-#if defined(CONFIG_ARM) || defined(__arm__) || defined(__aarch64__)
-	vunmap(buffer->vaddr);
-#else
 	if (buffer->flags & ION_FLAG_CACHED)
 		memunmap(buffer->vaddr);
 	else
 		iounmap(buffer->vaddr);
-
-#endif
 }
 
 int ion_heap_map_user(struct ion_heap *heap, struct ion_buffer *buffer,
@@ -275,8 +237,7 @@ int ion_heap_init_deferred_free(struct ion_heap *heap)
 static unsigned long ion_heap_shrink_count(struct shrinker *shrinker,
 					   struct shrink_control *sc)
 {
-	struct ion_heap *heap = container_of(shrinker, struct ion_heap,
-					     shrinker);
+	struct ion_heap *heap = shrinker->private_data;
 	int total = 0;
 
 	total = ion_heap_freelist_size(heap) / PAGE_SIZE;
@@ -290,8 +251,7 @@ static unsigned long ion_heap_shrink_count(struct shrinker *shrinker,
 static unsigned long ion_heap_shrink_scan(struct shrinker *shrinker,
 					  struct shrink_control *sc)
 {
-	struct ion_heap *heap = container_of(shrinker, struct ion_heap,
-					     shrinker);
+	struct ion_heap *heap = shrinker->private_data;
 	int freed = 0;
 	int to_scan = sc->nr_to_scan;
 
@@ -318,10 +278,16 @@ static unsigned long ion_heap_shrink_scan(struct shrinker *shrinker,
 
 int ion_heap_init_shrinker(struct ion_heap *heap)
 {
-	heap->shrinker.count_objects = ion_heap_shrink_count;
-	heap->shrinker.scan_objects = ion_heap_shrink_scan;
-	heap->shrinker.seeks = DEFAULT_SEEKS;
-	heap->shrinker.batch = 0;
+	heap->shrinker = shrinker_alloc(0, "ion-%s", heap->name);
+	if (!heap->shrinker)
+		return -ENOMEM;
 
-	return register_shrinker(&heap->shrinker);
+	heap->shrinker->count_objects = ion_heap_shrink_count;
+	heap->shrinker->scan_objects = ion_heap_shrink_scan;
+	heap->shrinker->seeks = DEFAULT_SEEKS;
+	heap->shrinker->batch = 0;
+	heap->shrinker->private_data = heap;
+
+	shrinker_register(heap->shrinker);
+	return 0;
 }

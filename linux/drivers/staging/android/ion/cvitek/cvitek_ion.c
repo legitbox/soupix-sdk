@@ -2,7 +2,7 @@
  * Copyright (C) Cvitek Co., Ltd. 2019-2020. All rights reserved.
  *
  * File Name: cvitek_ion.c
- * Description:
+ * Description: CVITEK ION platform driver (RISC-V only, backported to 6.12)
  */
 
 #define pr_fmt(fmt) "Ion: " fmt
@@ -16,14 +16,9 @@
 #include <linux/of_reserved_mem.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
-#include <asm/cacheflush.h>
-#include <asm/pgtable.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/version.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 #include <linux/dma-map-ops.h>
-#endif
 
 #include "../ion.h"
 #include "../../uapi/ion_cvitek.h"
@@ -224,121 +219,12 @@ static int cvitek_get_heap_info(struct ion_device *dev, struct cvitek_heap_info 
 
 	return -1;
 }
-#if defined(CONFIG_ARM) || defined(__arm__) || defined(__aarch64__)
-u64 get_user_pa(u64 user_addr)
-{
-	pgd_t *pgd; //= (pgd_t*)per_cpu(current_pgd, smp_processor_id());
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *pte;
-	struct mm_struct *mm;
-	u64 pa;
-
-	if (!find_vma(current->mm, user_addr)) {
-		pr_err("no va %llx\n", user_addr);
-		goto exit;
-	}
-
-	mm = current->mm;
-	if (!mm) {
-		pr_err("no vm_mm\n");
-		goto exit;
-	}
-
-	pgd = pgd_offset(mm, user_addr);
-	pr_debug("[%08llx] *pgd=%016llx", user_addr, pgd_val(*pgd));
-	if (pgd_none(*pgd) || pgd_bad(*pgd))
-		goto exit;
-
-	p4d = p4d_offset(pgd, user_addr);
-	pud = pud_offset(p4d, user_addr);
-	pr_debug(", *pud=%016llx", pud_val(*pud));
-	if (pud_none(*pud) || pud_bad(*pud))
-		goto exit;
-
-	pmd = pmd_offset(pud, user_addr);
-	pr_debug(", *pmd=%016llx", pmd_val(*pmd));
-	if (pmd_none(*pmd) || pmd_bad(*pmd))
-		goto exit;
-
-	pte = pte_offset_map(pmd, user_addr);
-	pr_debug(", *pte=%016llx", pte_val(*pte));
-	if (!pte_present(*pte))
-		goto exit;
-
-	pa = ((pte_val(*pte) & PHYS_MASK) & PAGE_MASK) |
-						(user_addr & ~PAGE_MASK);
-
-	return pa;
-
-exit:
-	pr_err("failed to get pa\n");
-	return 0;
-}
-#endif
 
 long cvitek_ion_ioctl(struct ion_device *dev, unsigned int cmd, unsigned long arg)
 {
 	long ret = 0;
 
 	switch (cmd) {
-#ifndef __riscv
-	/* we do not support this now in riscv */
-	case ION_IOC_CVITEK_FLUSH_RANGE:
-	{
-		struct cvitek_cache_range data;
-
-		if (copy_from_user(&data, (void __user *)arg, sizeof(data)))
-			return -EFAULT;
-
-		if (IS_ERR(data.start)) {
-			pr_err("flush fault addr %p, size %zu!\n", data.start, data.size);
-			return -EFAULT;
-		}
-
-		pr_debug("flush addr %p, size %zu\n", data.start, data.size);
-#ifdef CONFIG_ARM
-		__cpuc_flush_user_range((u32)data.start, ((u32)data.start) + data.size, 0);
-#else
-		__flush_cache_user_range((u64)data.start, ((u64)data.start) + data.size);
-#endif
-		break;
-	}
-	case ION_IOC_CVITEK_INVALIDATE_RANGE:
-	{
-		struct cvitek_cache_range data;
-		unsigned long  va, pa;
-
-		if (copy_from_user(&data, (void __user *)arg, sizeof(data)))
-			return -EFAULT;
-
-		if (IS_ERR(data.start)) {
-			pr_err(" addr %p, size %zu!\n", data.start, data.size);
-			return -EFAULT;
-		}
-
-		pr_debug("ion invalidate:%p, %zu\n", data.start, data.size);
-#ifdef CONFIG_ARM
-		pa = get_user_pa((u32)data.start);
-#else
-		pa = get_user_pa((u64)data.start);
-#endif
-		if (!pa) {
-			pr_err("pa is 0\n");
-			break;
-		}
-
-		va = (unsigned long)phys_to_virt(pa);
-		pr_debug("IonInv  va:%lx, pa:%lx\n", va, pa);
-#ifdef CONFIG_ARM
-		invalidate_kernel_vmap_range((void*)va, data.size);
-#else
-		__inval_dcache_area(va, data.size);
-#endif
-		break;
-	}
-#endif
 	case ION_IOC_CVITEK_GET_HEAP_INFO:
 	{
 		struct cvitek_heap_info data;
@@ -357,40 +243,23 @@ long cvitek_ion_ioctl(struct ion_device *dev, unsigned int cmd, unsigned long ar
 	case ION_IOC_CVITEK_FLUSH_PHY_RANGE:
 	{
 		struct cvitek_cache_range data;
-		unsigned long  va, pa;
 
 		if (copy_from_user(&data, (void __user *)arg, sizeof(data)))
 			return -EFAULT;
 
 		pr_debug("flush addr %#llx, size %zu\n", data.paddr, data.size);
-
-#if defined(__arm__) || defined(__aarch64__)
-		/* compatible with previous version */
-		/* it could be removed and replaced by arch_sync_dma_for_device later */
-		__dma_map_area(phys_to_virt(data.paddr), data.size, DMA_TO_DEVICE);
-#else
 		arch_sync_dma_for_device(data.paddr, data.size, DMA_TO_DEVICE);
-#endif
 		break;
 	}
 	case ION_IOC_CVITEK_INVALIDATE_PHY_RANGE:
 	{
 		struct cvitek_cache_range data;
-		unsigned long  va, pa;
 
 		if (copy_from_user(&data, (void __user *)arg, sizeof(data)))
 			return -EFAULT;
 
 		pr_debug("invalidate addr %#llx, size %zu\n", data.paddr, data.size);
-
-
-#if defined(__arm__) || defined(__aarch64__)
-		/* compatible with previous version */
-		/* it could be removed and replaced by arch_sync_dma_for_device later */
-		__dma_map_area(phys_to_virt(data.paddr), data.size, DMA_FROM_DEVICE);
-#else
 		arch_sync_dma_for_device(data.paddr, data.size, DMA_FROM_DEVICE);
-#endif
 		break;
 	}
 	default:
@@ -492,15 +361,13 @@ out:
 	return ret;
 }
 
-static int cvitek_ion_remove(struct platform_device *pdev)
+static void cvitek_ion_remove(struct platform_device *pdev)
 {
 	struct cvi_ion_dev *ipdev;
 
 	ipdev = platform_get_drvdata(pdev);
 	kfree(ipdev->heaps);
 	ion_destroy_platform_data(ipdev->plat_data);
-
-	return 0;
 }
 
 static const struct of_device_id cvitek_ion_match_table[] = {
@@ -510,7 +377,7 @@ static const struct of_device_id cvitek_ion_match_table[] = {
 
 static struct platform_driver cvitek_ion_driver = {
 	.probe = cvitek_ion_probe,
-	.remove = cvitek_ion_remove,
+	.remove_new = cvitek_ion_remove,
 	.driver = {
 		.name = "ion-cvitek",
 		.of_match_table = cvitek_ion_match_table,

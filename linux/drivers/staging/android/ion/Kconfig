@@ -45,8 +45,8 @@ config ION_CMA_HEAP
 	  regions, you should say Y here.
 
 config ION_CVITEK
-    tristate "Ion for Cvitek"
-	depends on ARCH_CVITEK && ION
-	select ION_OF
+    bool "Ion for Cvitek"
+	depends on ION
+	select ION_CARVEOUT_HEAP
 	help
 	  Choose this option if you wish to use ion on Cvitek Platform

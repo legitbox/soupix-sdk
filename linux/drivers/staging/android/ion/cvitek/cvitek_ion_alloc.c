@@ -1,13 +1,12 @@
 /*
  * Copyright (C) Cvitek Co., Ltd. 2019-2020. All rights reserved.
  *
- * File Name: cvitek_ion.c
- * Description:
+ * File Name: cvitek_ion_alloc.c
+ * Description: CVITEK ION kernel-side allocation helpers (RISC-V, 6.12)
  */
 
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
-#include <linux/uaccess.h>
 
 #include "../ion.h"
 #include "cvitek_ion_alloc.h"
@@ -25,9 +24,7 @@ int _cvi_ion_alloc(enum ion_heap_type type, size_t len, bool mmap_cache, struct 
 	int ret = 0, index;
 	unsigned int heap_id;
 	struct ion_heap_data *heap_data;
-#if defined(__arm__) || defined(__aarch64__)
-	mm_segment_t old_fs = get_fs();
-#endif
+
 	memset(&query, 0, sizeof(struct ion_heap_query));
 	query.cnt = HEAP_QUERY_CNT;
 	heap_data = vzalloc(sizeof(*heap_data) * HEAP_QUERY_CNT);
@@ -39,18 +36,8 @@ int _cvi_ion_alloc(enum ion_heap_type type, size_t len, bool mmap_cache, struct 
 		 __func__, len, type,
 		 (mmap_cache) ? "cacheable" : "un-cacheable");
 
-#if defined(__arm__) || defined(__aarch64__)
-	set_fs(KERNEL_DS);
-#else
-	mm_segment_t old_fs = force_uaccess_begin();
-#endif
+	/* is_kernel=true bypasses uaccess checks */
 	ret = ion_query_heaps(&query, true);
-
-#if defined(__arm__) || defined(__aarch64__)
-	set_fs(old_fs);
-#else
-	force_uaccess_end(old_fs);
-#endif
 
 	if (ret != 0)
 		return ret;
