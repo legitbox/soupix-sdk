@@ -1,5 +1,8 @@
 #include <linux/cvi_base_ctx.h>
 #include <linux/slab.h>
+#include <linux/of.h>
+#include <linux/of_device.h>
+#include <linux/platform_device.h>
 #include <base_cb.h>
 #include <base_ctx.h>
 

@@ -266,7 +266,7 @@ static void vo_core_remove(struct platform_device *pdev)
 err_destroy_instance:
 	CVI_TRACE_VO(CVI_DBG_INFO, "%s -\n", __func__);
 
-	return ret;
+	return;
 }
 
 #if defined(CONFIG_PM)

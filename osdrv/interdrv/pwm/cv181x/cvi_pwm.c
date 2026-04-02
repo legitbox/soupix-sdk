@@ -57,6 +57,7 @@ struct cv_pwm_chip {
 	u8 polarity_mask;
 	bool no_polarity;
 	uint32_t pwm_saved_regs[PWM_REG_NUM];
+	struct cv_pwm_channel *channels[8]; /* per-channel data */
 };
 
 
@@ -68,20 +69,23 @@ struct cv_pwm_chip *to_cv_pwm_chip(struct pwm_chip *chip)
 
 static int pwm_cv_request(struct pwm_chip *chip, struct pwm_device *pwm_dev)
 {
+	struct cv_pwm_chip *our_chip = to_cv_pwm_chip(chip);
 	struct cv_pwm_channel *channel;
 
 	channel = kzalloc(sizeof(*channel), GFP_KERNEL);
 	if (!channel)
 		return -ENOMEM;
 
-	return pwm_set_chip_data(pwm_dev, channel);
+	our_chip->channels[pwm_dev->hwpwm] = channel;
+	return 0;
 }
 
 static void pwm_cv_free(struct pwm_chip *chip, struct pwm_device *pwm_dev)
 {
-	struct cv_pwm_channel *channel = pwm_get_chip_data(pwm_dev);
+	struct cv_pwm_chip *our_chip = to_cv_pwm_chip(chip);
+	struct cv_pwm_channel *channel = our_chip->channels[pwm_dev->hwpwm];
 
-	pwm_set_chip_data(pwm_dev, NULL);
+	our_chip->channels[pwm_dev->hwpwm] = NULL;
 	kfree(channel);
 }
 
@@ -89,7 +93,7 @@ static int pwm_cv_config(struct pwm_chip *chip, struct pwm_device *pwm_dev,
 			     int duty_ns, int period_ns)
 {
 	struct cv_pwm_chip *our_chip = to_cv_pwm_chip(chip);
-	struct cv_pwm_channel *channel = pwm_get_chip_data(pwm_dev);
+	struct cv_pwm_channel *channel = to_cv_pwm_chip(chip)->channels[pwm_dev->hwpwm];
 	u64 cycles;
 	unsigned long value;
 
@@ -133,7 +137,7 @@ static int pwm_cv_config(struct pwm_chip *chip, struct pwm_device *pwm_dev,
 static int pwm_cv_enable(struct pwm_chip *chip, struct pwm_device *pwm_dev)
 {
 	struct cv_pwm_chip *our_chip = to_cv_pwm_chip(chip);
-	struct cv_pwm_channel *channel = pwm_get_chip_data(pwm_dev);
+	struct cv_pwm_channel *channel = to_cv_pwm_chip(chip)->channels[pwm_dev->hwpwm];
 	uint32_t pwm_start_value;
 	uint32_t value;
 
@@ -282,17 +286,23 @@ static int pwm_cv_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct cv_pwm_chip *chip;
+	struct pwm_chip *pwmchip;
 	struct resource *res;
+	unsigned int npwm = 4;
 	int ret;
 
-	// pr_debug("%s\n", __func__);
+	if (of_property_read_bool(pdev->dev.of_node, "pwm-num"))
+		device_property_read_u32(&pdev->dev, "pwm-num", &npwm);
 
-	chip = devm_kzalloc(&pdev->dev, sizeof(*chip), GFP_KERNEL);
-	if (chip == NULL)
-		return -ENOMEM;
+	pwmchip = devm_pwmchip_alloc(&pdev->dev, npwm, sizeof(*chip));
+	if (IS_ERR(pwmchip))
+		return PTR_ERR(pwmchip);
 
-	chip->chip.ops = &pwm_cv_ops;
+	chip = pwmchip_get_drvdata(pwmchip);
+	chip->chip = *pwmchip;
 	chip->polarity_mask = 0;
+
+	pwmchip->ops = &pwm_cv_ops;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	chip->base = devm_ioremap_resource(&pdev->dev, res);
@@ -311,22 +321,14 @@ static int pwm_cv_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	//pwm-num default is 4, compatible with bm1682
-	if (of_property_read_bool(pdev->dev.of_node, "pwm-num"))
-		device_property_read_u32(&pdev->dev, "pwm-num", &chip->chip.npwm);
-	else
-		chip->chip.npwm = 4;
-
-	//no_polarity default is false(have polarity) , compatible with bm1682
 	if (of_property_read_bool(pdev->dev.of_node, "no-polarity"))
 		chip->no_polarity = true;
 	else
 		chip->no_polarity = false;
-	// pr_debug("chip->chip.npwm = %d  chip->no_polarity = %d\n", chip->chip.npwm, chip->no_polarity);
 
 	platform_set_drvdata(pdev, chip);
 
-	ret = pwmchip_add(&chip->chip);
+	ret = devm_pwmchip_add(&pdev->dev, pwmchip);
 	if (ret < 0) {
 		dev_err(dev, "failed to register PWM chip\n");
 		clk_disable_unprepare(chip->base_clk);
@@ -339,14 +341,8 @@ static int pwm_cv_probe(struct platform_device *pdev)
 static void pwm_cv_remove(struct platform_device *pdev)
 {
 	struct cv_pwm_chip *chip = platform_get_drvdata(pdev);
-	int ret;
-
-	ret = pwmchip_remove(&chip->chip);
-	if (ret < 0)
-		return ret;
 
 	clk_disable_unprepare(chip->base_clk);
-
 }
 
 #ifdef CONFIG_PM_SLEEP

@@ -36,7 +36,6 @@ static FILE *fpLog;
 
 struct cvi_osal_file {
 	struct file *filep;
-	mm_segment_t old_fs;
 };
 
 
@@ -222,7 +221,6 @@ osal_file_t osal_fopen(const char *osal_file_tname, const char *mode)
 		return NULL;
 	}
 
-	cvi_fp->old_fs = get_fs();
 	return cvi_fp;
 }
 size_t osal_fwrite(const void *p, int size, int count, osal_file_t fp)
@@ -267,7 +265,6 @@ int osal_fclose(osal_file_t fp)
 
 	filep = cvi_fp->filep;
 	filp_close(filep, 0);
-	set_fs(cvi_fp->old_fs);
 	vfree(cvi_fp);
 	return 0;
 }

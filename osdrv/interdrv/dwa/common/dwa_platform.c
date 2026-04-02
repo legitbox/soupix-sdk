@@ -202,7 +202,7 @@ err:
 	if (kdata != stack_kdata)
 		kfree(kdata);
 
-	return ret;
+	return 0;
 }
 
 static int dwa_release(struct inode *inode, struct file *filp)
@@ -533,8 +533,8 @@ static void cvi_dwa_remove(struct platform_device *pdev)
 	}
 
 	if (!pdev) {
-		dev_err(&pdev->dev, "invalid param");
-		return -EINVAL;
+		pr_err("invalid param");
+		return;
 	}
 
 	wdev = dev_get_drvdata(&pdev->dev);
@@ -565,7 +565,7 @@ int dwa_suspend(struct device *dev)
 	ret = dwa_stop_handler(wdev_dwa);
 	if (ret != CVI_SUCCESS) {
 		CVI_TRACE_DWA(CVI_DBG_ERR, "fail to stop dwa thread, err=%d\n", ret);
-		return ret;
+		return 0;
 	} else
 		CVI_TRACE_DWA(CVI_DBG_ERR, "dwa thread stopped\n");
 
@@ -575,7 +575,7 @@ int dwa_suspend(struct device *dev)
 	mutex_unlock(&dwa_reg_lock);
 
 	CVI_TRACE_DWA(CVI_DBG_ERR, "dwa suspended!\n");
-	return ret;
+	return 0;
 }
 
 int dwa_resume(struct device *dev)
@@ -591,7 +591,7 @@ int dwa_resume(struct device *dev)
 	ret = dwa_start_handler(wdev_dwa);
 	if (ret != CVI_SUCCESS) {
 		CVI_TRACE_DWA(CVI_DBG_ERR, "fail to restart gdc thread, err=%d\n", ret);
-		return ret;
+		return -EINVAL;
 	} else
 		CVI_TRACE_DWA(CVI_DBG_ERR, "gdc thread restarted\n");
 
@@ -601,7 +601,7 @@ int dwa_resume(struct device *dev)
 	mutex_unlock(&dwa_reg_lock);
 
 	CVI_TRACE_DWA(CVI_DBG_ERR, "dwa resume!\n");
-	return ret;
+	return 0;
 }
 
 static SIMPLE_DEV_PM_OPS(dwa_pm_ops, dwa_suspend, dwa_resume);

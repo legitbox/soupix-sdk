@@ -466,16 +466,18 @@ static long cvi_rtos_cmdqu_ioctl(struct file *filp, unsigned int cmd, unsigned l
 	switch (cmd) {
 		case RTOS_CMDQU_SEND:
 			pr_debug("RTOS_CMDQU_SEND\n");
-			(void)copy_from_user(&cmdq,
+			if (copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
-				sizeof(struct cmdqu_t));
+				sizeof(struct cmdqu_t)))
+				return -EFAULT;
 			ret = rtos_cmdqu_send(&cmdq);
 			break;
 		case RTOS_CMDQU_SEND_WAKEUP:
 			pr_debug("RTOS_CMDQU_SEND_WAKEUP\n");
-			(void)copy_from_user(&cmdq,
+			if (copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
-				sizeof(struct cmdqu_t));
+				sizeof(struct cmdqu_t)))
+				return -EFAULT;
 			pr_debug("cmdq.ip_id=%d cmdq.cmd_id=%d\n", cmdq.ip_id, cmdq.cmd_id);
 
 			spin_lock_irqsave(&send_queue_lock, flags);
@@ -503,31 +505,33 @@ static long cvi_rtos_cmdqu_ioctl(struct file *filp, unsigned int cmd, unsigned l
 
 		case RTOS_CMDQU_SEND_WAIT:
 			pr_debug("RTOS_CMDQU_SEND_WAIT\n");
-			ret = copy_from_user(&cmdq,
+			if (copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
-				sizeof(struct cmdqu_t));
-			if (ret) {
+				sizeof(struct cmdqu_t))) {
 				kfree(wait_list);
 				return -EFAULT;
 			}
 			rtos_cmdqu_send_wait(&cmdq, cmdq.cmd_id);
-			ret = copy_to_user((struct cmdqu_t __user *)arg,
+			if (copy_to_user((struct cmdqu_t __user *)arg,
 					&cmdq,
-					sizeof(struct cmdqu_t));
+					sizeof(struct cmdqu_t)))
+				return -EFAULT;
 			kfree(wait_list);
 			break;
 		case RTOS_CMDQU_REQUEST:
-			(void)copy_from_user(&cmdq,
+			if (copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
-				sizeof(struct cmdqu_t));
+				sizeof(struct cmdqu_t)))
+				return -EFAULT;
 
 			ret = request_rtos_irq(cmdq.ip_id, callback_rtos_irq_handler,
 				"RTOS_CMDQU_REQUEST", (void *)((unsigned long)cmdq.param_ptr));
 			break;
 		case RTOS_CMDQU_REQUEST_FREE:
-			(void)copy_from_user(&cmdq,
+			if (copy_from_user(&cmdq,
 				(struct cmdqu_t __user *)arg,
-				sizeof(struct cmdqu_t));
+				sizeof(struct cmdqu_t)))
+				return -EFAULT;
 			free_rtos_irq(cmdq.ip_id);
 			break;
 		default:

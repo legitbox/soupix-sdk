@@ -2926,8 +2926,9 @@ static int _init_resource(struct platform_device *pdev)
 		link = &dev->link[i];
 		link->dev = &pdev->dev;
 		link->mac_clk = RX_MAC_CLK_400M;
-		link->snsr_rst_pin = of_get_named_gpio_flags(pdev->dev.of_node,
-				"snsr-reset", i, &link->snsr_rst_pol);
+		link->snsr_rst_pin = of_get_named_gpio(pdev->dev.of_node,
+				"snsr-reset", i);
+		link->snsr_rst_pol = 0;
 		if (link->snsr_rst_pin < 0)
 			break;
 
@@ -3342,8 +3343,8 @@ static void cvi_cif_remove(struct platform_device *pdev)
 	struct cvi_cif_dev *dev;
 
 	if (!pdev) {
-		dev_err(&pdev->dev, "invalid param");
-		return -EINVAL;
+		pr_err("invalid param");
+		return;
 	}
 
 	/* rm cif_cb */

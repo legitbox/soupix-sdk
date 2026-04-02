@@ -254,7 +254,7 @@ void _disp_ctrlpin_set(unsigned int gpio_num, enum GPIO_ACTIVE_E active)
 	if (gpio_is_valid(gpio_num)) {
 //		
 		snprintf(name, sizeof(name), "disp_ctrl_pin_%d", count++);
-		rc = devm_gpio_request_one(&g_pdev->dev, gpio_num, flags, name);
+		rc = devm_gpio_request_one(&g_pdev->dev, gpio_num, GPIOF_OUT_INIT_LOW, name);
 		if (rc) {
 			CVI_TRACE_VO(CVI_DBG_ERR, "gpio_num(%d) failed\n",  gpio_num);
 			return;
@@ -269,7 +269,7 @@ static void _disp_resetpin_set(unsigned int gpio_num, enum GPIO_ACTIVE_E active)
 
 	if (gpio_is_valid(gpio_num)) {
 //		
-		rc = devm_gpio_request_one(&g_pdev->dev, gpio_num, flags, NULL);
+		rc = devm_gpio_request_one(&g_pdev->dev, gpio_num, GPIOF_OUT_INIT_LOW, NULL);
 		if (rc) {
 			CVI_TRACE_VO(CVI_DBG_ERR, "reset gpio_num(%d) failed\n",  gpio_num);
 		} else {

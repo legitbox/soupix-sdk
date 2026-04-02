@@ -129,7 +129,7 @@ static void cvi_rgn_remove(struct platform_device *pdev)
 err_destroy_instance:
 	CVI_TRACE_RGN(RGN_INFO, "%s -\n", __func__);
 
-	return ret;
+	return;
 }
 
 static const struct of_device_id cvi_rgn_dt_match[] = {
