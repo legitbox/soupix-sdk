@@ -210,7 +210,7 @@ static const struct seq_operations cvi_stats_seq_ops = {
 /* proc file open*/
 static int cvi_stats_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, cvi_stats_seq_show, PDE_DATA(inode));
+	return single_open(file, cvi_stats_seq_show, pde_data(inode));
 };
 
 /* proc file operation */

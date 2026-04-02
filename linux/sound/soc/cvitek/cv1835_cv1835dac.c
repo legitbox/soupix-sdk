@@ -115,7 +115,7 @@ static int cv183x_dac_proc_show(struct seq_file *m, void *v)
 
 static int seq_cv183x_dac_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, cv183x_dac_proc_show, PDE_DATA(inode));
+	return single_open(file, cv183x_dac_proc_show, pde_data(inode));
 }
 static const struct file_operations cv183x_dac_proc_ops = {
 	.owner  = THIS_MODULE,

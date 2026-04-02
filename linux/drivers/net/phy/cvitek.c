@@ -449,7 +449,6 @@ static struct phy_driver cv182xa_phy_driver[] = {
 	.config_aneg	= cv182xa_phy_config_aneg,
 	.read_status	= cv182xa_read_status,
 	/* IRQ related */
-	.ack_interrupt	= cv182xa_phy_ack_interrupt,
 	.config_intr	= cv182xa_phy_config_intr,
 	.aneg_done	= genphy_aneg_done,
 	.suspend	= cvi_genphy_suspend,

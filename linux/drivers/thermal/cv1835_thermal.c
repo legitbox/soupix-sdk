@@ -315,9 +315,9 @@ static int calc_temp(uint32_t result)
 	// return ((result * 1000) / 2048 * 716 - 273000);
 }
 
-static int cv1835_read_temp(void *data, int *temperature)
+static int cv1835_read_temp(struct thermal_zone_device *tz, int *temperature)
 {
-	struct cv1835_thermal_zone *ctz = data;
+	struct cv1835_thermal_zone *ctz = thermal_zone_device_priv(tz);
 	void __iomem *base = ctz->base;
 	unsigned int ch = ctz->ch;
 	u32 result;
@@ -337,7 +337,7 @@ static int cv1835_read_temp(void *data, int *temperature)
 	return 0;
 }
 
-static const struct thermal_zone_of_device_ops cv1835_thermal_ops = {
+static const struct thermal_zone_device_ops cv1835_thermal_ops = {
 	.get_temp = cv1835_read_temp,
 };
 
@@ -391,7 +391,7 @@ static int cv1835_thermal_probe(struct platform_device *pdev)
 		ctz->base = ct->base;
 		ctz->ct = ct;
 		ctz->ch = i;
-		tz = devm_thermal_zone_of_sensor_register(&pdev->dev, i, ctz,
+		tz = devm_thermal_of_zone_register(&pdev->dev, i, ctz,
 							  &cv1835_thermal_ops);
 		if (IS_ERR(tz)) {
 			dev_err(&pdev->dev, "failed to register thermal zone %d\n", i);

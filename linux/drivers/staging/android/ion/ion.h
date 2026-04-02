@@ -13,6 +13,7 @@
 #include <linux/kref.h>
 #include <linux/mm_types.h>
 #include <linux/mutex.h>
+#include <linux/plist.h>
 #include <linux/rbtree.h>
 #include <linux/sched.h>
 #include <linux/shrinker.h>

@@ -182,6 +182,7 @@ static const struct of_device_id bm_dwmac_match[] = {
 MODULE_DEVICE_TABLE(of, bm_dwmac_match);
 
 #ifdef CONFIG_PM_SLEEP
+#if 0 /* CVITEK custom PM disabled for 6.12 — uses upstream stmmac PM instead */
 #if defined(CONFIG_ARCH_CV180X) || defined(CONFIG_ARCH_CV181X)
 
 static int cvi_eth_pm_suspend(struct device *dev)
@@ -266,9 +267,7 @@ static int cvi_eth_pm_resume(struct device *dev)
 #define cvi_eth_pm_suspend	NULL
 #define cvi_eth_pm_resume	NULL
 #endif
-static const struct dev_pm_ops cvi_eth_pm_ops = {
-	SET_SYSTEM_SLEEP_PM_OPS(cvi_eth_pm_suspend, cvi_eth_pm_resume)
-};
+#endif /* disabled custom PM */
 #endif
 
 static struct platform_driver bm_dwmac_driver = {
@@ -276,13 +275,7 @@ static struct platform_driver bm_dwmac_driver = {
 	.remove_new = stmmac_pltfr_remove,
 	.driver = {
 		.name           = "bm-dwmac",
-#ifdef CONFIG_PM_SLEEP
-#if defined(CONFIG_ARCH_CV180X) || defined(CONFIG_ARCH_CV181X)
-		.pm		= &cvi_eth_pm_ops,
-#else
 		.pm		= &stmmac_pltfr_pm_ops,
-#endif
-#endif
 		.of_match_table = bm_dwmac_match,
 	},
 };
