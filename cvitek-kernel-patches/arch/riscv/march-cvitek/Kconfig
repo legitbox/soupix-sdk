@@ -1,9 +1,7 @@
 config ARCH_CVITEK
     bool "Cvitek SoC Family"
-	select ION
 	select ION_CVITEK
-	select ION_CARVEOUT_HEAP
-	select STAGING
+	select SCHED_CVITEK
 	help
       This enables support for Cvitek SoC family.
 
