@@ -22,6 +22,8 @@
 #include <linux/version.h>
 #include "cv1835_i2s_subsys.h"
 
+/* proc_audio_dir defined here when cv1835_i2s is not compiled */
+struct proc_dir_entry *proc_audio_dir __attribute__((weak));
 bool proc_ai_not_allocted = true;
 
 static int cv181x_adc_vol_list[25] = {
