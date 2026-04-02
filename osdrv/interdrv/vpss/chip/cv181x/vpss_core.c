@@ -881,7 +881,7 @@ img_unlock:
 job_unlock:
 	spin_unlock_irqrestore(&idev->job_lock, flags_job);
 
-	return;
+	return 0;
 }
 
 /**
@@ -998,7 +998,7 @@ u32 cvi_sc_cfg_cb(struct sc_cfg_cb *post_para, struct cvi_vip_dev *dev)
 	u8 grp_id = post_para->snr_num;
 
 	if (!dev)
-		return;
+		return ret;
 
 	for (i = 0; i < CVI_VIP_IMG_MAX; ++i)
 		if (dev->img_vdev[i].is_online_from_isp) {
@@ -1415,14 +1415,14 @@ static int _init_resources(struct platform_device *pdev)
 	dev = dev_get_drvdata(&pdev->dev);
 	if (!dev) {
 		dev_err(&pdev->dev, "Can not get cvi_vip drvdata\n");
-		return;
+		return -EINVAL;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(reg_base); ++i) {
 		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
 		if (!res) {
 			CVI_TRACE_VPSS(CVI_DBG_ERR, "Failed to get res[%d]\n", i);
-			return;
+			return -EINVAL;
 		}
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 		reg_base[i] = devm_ioremap(&pdev->dev, res->start,
@@ -1435,7 +1435,7 @@ static int _init_resources(struct platform_device *pdev)
 			i, res->start, res->end, reg_base[i]);
 		if (!reg_base[i]) {
 			CVI_TRACE_VPSS(CVI_DBG_ERR, "Failed to get reg_base[%d]\n", i);
-			return;
+			return -EINVAL;
 		}
 	}
 	sclr_set_base_addr(reg_base[0]);
@@ -1666,7 +1666,7 @@ static int cvi_vpss_probe(struct platform_device *pdev)
 		 "CVI_VIP_SCL", dev)) {
 		dev_err(&pdev->dev, "Unable to request scl IRQ(%d)\n",
 				dev->irq_num_scl);
-		return;
+		return -EINVAL;
 	}
 
 #if defined(CONFIG_SCLR_TEST)
@@ -1677,7 +1677,7 @@ static int cvi_vpss_probe(struct platform_device *pdev)
 	/* scaler register cb */
 	if (vpss_core_register_cb(dev)) {
 		dev_err(&pdev->dev, "Failed to register vpss cb, err %d\n", rc);
-		return;
+		return -EINVAL;
 	}
 
 	vpss_init(dev);
@@ -1753,7 +1753,7 @@ static int vpss_core_resume(struct device *dev)
 		 "CVI_VIP_SCL", vdev)) {
 		dev_err(&pdev->dev, "Unable to request scl IRQ(%d)\n",
 				vdev->irq_num_scl);
-		return;
+		return -EINVAL;
 	}
 	vpss_resume();
 	return 0;

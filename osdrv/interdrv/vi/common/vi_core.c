@@ -280,7 +280,7 @@ static void vi_core_remove(struct platform_device *pdev)
 err_destroy_instance:
 	vi_pr(VI_INFO, "%s -\n", __func__);
 
-	return ret;
+	return;
 }
 
 #ifdef CONFIG_PM_SLEEP

@@ -18,6 +18,7 @@
 #include <linux/uaccess.h>
 #include <linux/cdev.h>
 #include <linux/slab.h>
+#include <linux/vmalloc.h>
 #include <linux/sched.h>
 #include <linux/of.h>
 #include <linux/of_address.h>
@@ -58,7 +59,7 @@
 #define MJPEG_PIC_STATUS_REG 0x4
 #define MJPEG_INTR_MASK_REG  0x0C0
 
-static DEFINE_SEMAPHORE(s_jpu_sem);
+static DEFINE_SEMAPHORE(s_jpu_sem, 1);
 
 int jpu_mask = JPU_MASK_ERR;
 module_param(jpu_mask, int, 0644);

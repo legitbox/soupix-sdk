@@ -126,7 +126,7 @@ static spinlock_t s_vpu_lock = __SPIN_LOCK_UNLOCKED(s_vpu_lock);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
 static DECLARE_MUTEX(s_vpu_sem);
 #else
-static DEFINE_SEMAPHORE(s_vpu_sem);
+static DEFINE_SEMAPHORE(s_vpu_sem, 1);
 #endif
 static struct list_head s_vbp_head = LIST_HEAD_INIT(s_vbp_head);
 static struct list_head s_inst_list_head = LIST_HEAD_INIT(s_inst_list_head);
