@@ -1233,7 +1233,7 @@ int btchr_init()
     init_waitqueue_head(&btchr_read_wait);
     init_waitqueue_head(&bt_dlfw_wait);
 
-    bt_char_class = class_create(THIS_MODULE, BT_CHAR_DEVICE_NAME);
+    bt_char_class = class_create(BT_CHAR_DEVICE_NAME);
     if (IS_ERR(bt_char_class)) {
         AICBT_ERR("Failed to create bt char class");
         return PTR_ERR(bt_char_class);

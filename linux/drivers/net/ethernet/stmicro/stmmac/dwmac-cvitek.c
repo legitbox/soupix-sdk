@@ -140,17 +140,13 @@ static int bm_dwmac_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	plat_dat = stmmac_probe_config_dt(pdev, &stmmac_res.mac);
+	plat_dat = devm_stmmac_probe_config_dt(pdev, stmmac_res.mac);
 	if (IS_ERR(plat_dat))
 		return PTR_ERR(plat_dat);
 
-	ret = stmmac_dvr_probe(&pdev->dev, plat_dat, &stmmac_res);
-	if (ret)
-		goto err_remove_config_dt;
-
 	bsp_priv = devm_kzalloc(&pdev->dev, sizeof(*bsp_priv), GFP_KERNEL);
 	if (!bsp_priv)
-		return PTR_ERR(bsp_priv);
+		return -ENOMEM;
 
 	bsp_priv->dev = &pdev->dev;
 
@@ -172,12 +168,11 @@ static int bm_dwmac_probe(struct platform_device *pdev)
 	plat_dat->bsp_priv = bsp_priv;
 	plat_dat->exit = bm_dwmac_exit;
 
+	ret = stmmac_dvr_probe(&pdev->dev, plat_dat, &stmmac_res);
+	if (ret)
+		return ret;
+
 	return 0;
-
-err_remove_config_dt:
-	stmmac_remove_config_dt(pdev, plat_dat);
-
-	return ret;
 }
 
 static const struct of_device_id bm_dwmac_match[] = {
@@ -278,7 +273,7 @@ static const struct dev_pm_ops cvi_eth_pm_ops = {
 
 static struct platform_driver bm_dwmac_driver = {
 	.probe  = bm_dwmac_probe,
-	.remove = stmmac_pltfr_remove,
+	.remove_new = stmmac_pltfr_remove,
 	.driver = {
 		.name           = "bm-dwmac",
 #ifdef CONFIG_PM_SLEEP

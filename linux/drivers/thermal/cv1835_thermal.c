@@ -402,20 +402,18 @@ static int cv1835_thermal_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cv1835_thermal_remove(struct platform_device *pdev)
+static void cv1835_thermal_remove(struct platform_device *pdev)
 {
 	struct cv1835_thermal *ct = platform_get_drvdata(pdev);
 
 	cv1835_thermal_uninit(ct);
 
 	clk_disable_unprepare(ct->clk_tempsen);
-
-	return 0;
 }
 
 static struct platform_driver cv1835_thermal_driver = {
 	.probe = cv1835_thermal_probe,
-	.remove = cv1835_thermal_remove,
+	.remove_new = cv1835_thermal_remove,
 	.driver = {
 		.name = "cv1835-thermal",
 		.of_match_table = cv1835_thermal_of_match,

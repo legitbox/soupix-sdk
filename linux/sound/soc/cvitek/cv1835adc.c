@@ -763,10 +763,9 @@ static int cv1835adc_probe(struct platform_device *pdev)
 					       &cv1835adc_dai, 1);
 }
 
-static int cv1835adc_remove(struct platform_device *pdev)
+static void cv1835adc_remove(struct platform_device *pdev)
 {
 	dev_dbg(&pdev->dev, "%s\n", __func__);
-	return 0;
 }
 
 #ifdef CONFIG_OF
@@ -780,7 +779,7 @@ MODULE_DEVICE_TABLE(of, cvitek_adc_of_match);
 
 static struct platform_driver cv1835adc_platform_driver = {
 	.probe		= cv1835adc_probe,
-	.remove		= cv1835adc_remove,
+	.remove_new	= cv1835adc_remove,
 	.driver		= {
 		.name	= "cv1835adc",
 		.of_match_table = of_match_ptr(cvitek_adc_of_match),

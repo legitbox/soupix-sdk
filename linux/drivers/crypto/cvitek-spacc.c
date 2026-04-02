@@ -699,7 +699,7 @@ static int cvitek_spacc_drv_probe(struct platform_device *pdev)
 	if (ret)
 		goto failed;
 
-	spacc->spacc_class = class_create(THIS_MODULE, DEVICE_NAME);
+	spacc->spacc_class = class_create(DEVICE_NAME);
 	if (IS_ERR(spacc->spacc_class)) {
 		pr_err("Err: failed when create class.\n");
 		goto failed;
@@ -712,7 +712,7 @@ failed:
 	return -ENOMEM;
 }
 
-static int cvitek_spacc_drv_remove(struct platform_device *pdev)
+static void cvitek_spacc_drv_remove(struct platform_device *pdev)
 {
 	struct cvi_spacc *spacc = platform_get_drvdata(pdev);
 
@@ -720,8 +720,6 @@ static int cvitek_spacc_drv_remove(struct platform_device *pdev)
 	cdev_del(&spacc->cdev);
 	unregister_chrdev_region(spacc->tdev, 1);
 	class_destroy(spacc->spacc_class);
-
-	return 0;
 }
 
 #ifdef CONFIG_OF
@@ -734,7 +732,7 @@ MODULE_DEVICE_TABLE(of, cvitek_spacc_of_match);
 
 static struct platform_driver cvitek_spacc_driver = {
 	.probe		= cvitek_spacc_drv_probe,
-	.remove		= cvitek_spacc_drv_remove,
+	.remove_new	= cvitek_spacc_drv_remove,
 	.driver		= {
 		.name	= "cvitek_spacc",
 		.of_match_table = of_match_ptr(cvitek_spacc_of_match),

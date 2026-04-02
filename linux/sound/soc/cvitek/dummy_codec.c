@@ -83,9 +83,8 @@ static int dummy_codec_probe(struct platform_device *pdev)
 }
 
 
-static int dummy_codec_remove(struct platform_device *dev)
+static void dummy_codec_remove(struct platform_device *dev)
 {
-	return 0;
 }
 
 static void dummy_codec_release(struct device *dev)
@@ -100,7 +99,7 @@ static struct platform_driver cvitek_dummy_codec_driver = {
 		.name = "dummy_codec",
 	},
 	.probe = dummy_codec_probe,
-	.remove = dummy_codec_remove,
+	.remove_new = dummy_codec_remove,
 };
 
 static struct platform_device cvitek_dummy_codec_dev = {

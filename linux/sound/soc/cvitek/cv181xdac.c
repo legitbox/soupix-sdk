@@ -664,11 +664,10 @@ static int cv181xdac_probe(struct platform_device *pdev)
 					  &cv181xdac_dai, 1);
 }
 
-static int cv181xdac_remove(struct platform_device *pdev)
+static void cv181xdac_remove(struct platform_device *pdev)
 {
 	muteAmp(true);
 	dev_dbg(&pdev->dev, "cvitekadac_remove\n");
-	return 0;
 }
 
 #ifdef CONFIG_OF
@@ -727,7 +726,7 @@ static SIMPLE_DEV_PM_OPS(cv181xdac_pm_ops, cv181xdac_suspend,
 
 static struct platform_driver cv181xdac_platform_driver = {
 	.probe		= cv181xdac_probe,
-	.remove		= cv181xdac_remove,
+	.remove_new	= cv181xdac_remove,
 	.driver		= {
 		.name	= "cvitekadac",
 		.of_match_table = of_match_ptr(cvitek_dac_of_match),

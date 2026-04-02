@@ -400,15 +400,13 @@ static int cv182x_thermal_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cv182x_thermal_remove(struct platform_device *pdev)
+static void cv182x_thermal_remove(struct platform_device *pdev)
 {
 	struct cv182x_thermal *ct = platform_get_drvdata(pdev);
 
 	cv182x_thermal_uninit(ct);
 
 	clk_disable_unprepare(ct->clk_tempsen);
-
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -441,7 +439,7 @@ static SIMPLE_DEV_PM_OPS(cv182x_thermal_pm_ops,
 
 static struct platform_driver cv182x_thermal_driver = {
 	.probe = cv182x_thermal_probe,
-	.remove = cv182x_thermal_remove,
+	.remove_new = cv182x_thermal_remove,
 	.driver = {
 		.name = "cv182x-thermal",
 		.pm = &cv182x_thermal_pm_ops,

@@ -2103,7 +2103,7 @@ static int __dw_dma_remove(struct dw_dma *dw)
 	return 0;
 }
 
-static int dw_dma_remove(struct platform_device *pdev)
+static void dw_dma_remove(struct platform_device *pdev)
 {
 	struct dw_dma *dw = platform_get_drvdata(pdev);
 
@@ -2113,8 +2113,6 @@ static int dw_dma_remove(struct platform_device *pdev)
 	__dw_dma_remove(dw);
 	pm_runtime_disable(&pdev->dev);
 	clk_unprepare(dw->clk);
-
-	return 0;
 }
 
 static void dw_dma_shutdown(struct platform_device *pdev)
@@ -2174,7 +2172,7 @@ static const struct dev_pm_ops dw_dev_pm_ops = {
 
 static struct platform_driver dw_dma_driver = {
 	.probe = dw_dma_probe,
-	.remove = dw_dma_remove,
+	.remove_new = dw_dma_remove,
 	.shutdown = dw_dma_shutdown,
 	.driver = {
 		.name = DRV_NAME,

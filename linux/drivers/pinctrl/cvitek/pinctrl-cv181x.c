@@ -46,10 +46,9 @@ static int cvi_pinctrl_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cvi_pinctrl_remove(struct platform_device *pdev)
+static void cvi_pinctrl_remove(struct platform_device *pdev)
 {
 	dev_info(&pdev->dev, "%s()\n", __func__);
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -92,7 +91,7 @@ static const struct dev_pm_ops cvitek_pinctrl_pm_ops = {
 
 static struct platform_driver cvi_pinctrl_driver = {
 	.probe = cvi_pinctrl_probe,
-	.remove	= cvi_pinctrl_remove,
+	.remove_new	= cvi_pinctrl_remove,
 	.driver = {
 		.name = "cvitek,pinctrl-cv181x",
 		.of_match_table = cvi_pinctrl_of_match,

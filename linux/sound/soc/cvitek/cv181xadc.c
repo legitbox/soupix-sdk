@@ -893,13 +893,12 @@ static int cv181xadc_probe(struct platform_device *pdev)
 					  &cv181xadc_dai, 1);
 }
 
-static int cv181xadc_remove(struct platform_device *pdev)
+static void cv181xadc_remove(struct platform_device *pdev)
 {
 	struct cv181xadc *adc = dev_get_drvdata(&pdev->dev);
 
 	dev_dbg(&pdev->dev, "cvitekaadc_remove\n");
 	iounmap(adc->mclk_source);
-	return 0;
 }
 
 #ifdef CONFIG_OF
@@ -955,7 +954,7 @@ static SIMPLE_DEV_PM_OPS(cv181xadc_pm_ops, cv181xadc_suspend,
 
 static struct platform_driver cv181xadc_platform_driver = {
 	.probe		= cv181xadc_probe,
-	.remove		= cv181xadc_remove,
+	.remove_new	= cv181xadc_remove,
 	.driver		= {
 		.name	= "cvitekaadc",
 		.of_match_table = of_match_ptr(cvitek_adc_of_match),
