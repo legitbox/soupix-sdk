@@ -234,3 +234,8 @@ $(obj)/%conf-cflags $(obj)/%conf-libs $(obj)/%conf-bin: $(src)/%conf-cfg.sh
 	$(call cmd,conf_cfg)
 
 clean-files += *conf-cflags *conf-libs *conf-bin
+
+# CVITEK compat stub — original used Kconfiglib setconfig.py
+PHONY += setconfig
+setconfig: $(obj)/conf
+	@echo "setconfig: $(SCRIPT_ARG) (stub — set options in defconfig instead)"

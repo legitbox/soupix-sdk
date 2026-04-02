@@ -108,21 +108,19 @@ static int cvsnfc_dt_probe(struct platform_device *pdev)
 
 
 	platform_set_drvdata(pdev, dt);
-	return 0;
 }
 
-static int cvsnfc_dt_remove(struct platform_device *pdev)
+static void cvsnfc_dt_remove(struct platform_device *pdev)
 {
 	struct cvsnfc_dt *dt = platform_get_drvdata(pdev);
 
 	cvsnfc_remove(&dt->cvsnfc);
 
-	return 0;
 }
 
 static struct platform_driver cvsnfc_dt_driver = {
 	.probe          = cvsnfc_dt_probe,
-	.remove         = cvsnfc_dt_remove,
+	.remove_new         = cvsnfc_dt_remove,
 	.driver         = {
 		.name   = "cvsnfc",
 		.of_match_table = cvsnfc_dt_ids,
