@@ -313,7 +313,7 @@ ifeq (${CONFIG_ENABLE_EMMC_HW_RESET_QFN},y)
 	${Q}$(MAKE) -j${NPROC} -C ${KERNEL_PATH} O=${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER} savedefconfig
 endif
 	${Q}$(MAKE) -j${NPROC} -C ${KERNEL_PATH} O=${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER} olddefconfig
-	${Q}$(MAKE) -j${NPROC} -C ${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER} Image modules
+	${Q}$(MAKE) -j${NPROC} -C ${KERNEL_PATH} O=${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER} Image modules
 	${Q}$(MAKE) -j${NPROC} -C ${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER} modules_install headers_install INSTALL_HDR_PATH=${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER}/$(ARCH)/usr
 	${Q} ln -sf ${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER}/$(ARCH)/usr/include ${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER}/usr/include
 ifeq ($(patsubst "%",%,$(CONFIG_ARCH)),arm64)
@@ -335,8 +335,14 @@ kernel-dts: ${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER}
 	${Q}find ${BOARD_DTS_SEARCH_PATH} \
 		\( -path "*linux/*.dts*" -o -path "*dts_${ARCH}/*.dts*" \) \
 		-exec ln -sf {} ${KERNEL_PATH}/arch/${ARCH}/boot/dts/${BRAND}/ \;
-	${Q}$(MAKE) -j${NPROC} -C ${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER} dtbs
-	${Q}cp ${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER}/arch/${ARCH}/boot/dts/${BRAND}/*.dtb ${RAMDISK_PATH}/${RAMDISK_OUTPUT_FOLDER}
+	${Q}cd ${KERNEL_PATH}/arch/${ARCH}/boot/dts/${BRAND}/ && \
+		for f in *.dts *.dtsi; do \
+			[ -L "$$f" ] && cp --remove-destination "$$(readlink -f $$f)" "$$f" 2>/dev/null; \
+		done; true
+	${Q}cp ${KERNEL_PATH}/${KERNEL_OUTPUT_FOLDER}/.config ${KERNEL_PATH}/.config.dtb_tmp
+	${Q}$(MAKE) -j${NPROC} -C ${KERNEL_PATH} KCONFIG_CONFIG=.config.dtb_tmp dtbs
+	${Q}rm -f ${KERNEL_PATH}/.config.dtb_tmp
+	${Q}cp ${KERNEL_PATH}/arch/${ARCH}/boot/dts/${BRAND}/*.dtb ${RAMDISK_PATH}/${RAMDISK_OUTPUT_FOLDER}
 
 kernel: $(OUTPUT_DIR)/rootfs
 kernel: kernel-build

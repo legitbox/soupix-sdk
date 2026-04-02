@@ -939,4 +939,5 @@ module_platform_driver(cvitek_sys_driver);
 MODULE_AUTHOR("Wellken Chen<wellken.chen@cvitek.com.tw>");
 MODULE_DESCRIPTION("Cvitek SoC SYS driver");
 MODULE_LICENSE("GPL");
+MODULE_IMPORT_NS(DMA_BUF);
 

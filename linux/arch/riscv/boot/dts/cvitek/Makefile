@@ -1,5 +1,3 @@
-dtb-$(CONFIG_ARCH_CVITEK) += $(foreach dts,$(patsubst %.dts,%.dtb,$(wildcard ${srctree}/${src}/*.dts)),$(notdir ${dts}))
+dtb-$(CONFIG_ARCH_CVITEK) += $(patsubst %.dts,%.dtb,$(notdir $(wildcard $(srctree)/$(src)/*.dts)))
 
-always          := $(dtb-y)
-subdir-y        := $(dts-dirs)
-clean-files     := *.dtb
+clean-files := *.dtb

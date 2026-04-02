@@ -5,6 +5,7 @@
  * Copyright (c) 2021 Western Digital Corporation or its affiliates.
  */
 
+#include <linux/export.h>
 #include <linux/dma-direct.h>
 #include <linux/dma-map-ops.h>
 #include <linux/mm.h>
@@ -94,6 +95,7 @@ void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
 		break;
 	}
 }
+EXPORT_SYMBOL(arch_sync_dma_for_device);
 
 void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size,
 			   enum dma_data_direction dir)
