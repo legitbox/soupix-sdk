@@ -33,9 +33,9 @@ ifeq ($(CONFIG_ARCH_RV64I),y)
 	KBUILD_CFLAGS += -mabi=lp64
 	KBUILD_AFLAGS += -mabi=lp64
 
-# workaround for C906 ldd performance issue
+# workaround for C906 ldd performance issue (T-HEAD GCC only)
 ifeq ($(CONFIG_ARCH_CVITEK),y)
-	KBUILD_CFLAGS += -mno-ldd
+	KBUILD_CFLAGS += $(call cc-option,-mno-ldd)
 endif
 
 	KBUILD_LDFLAGS += -melf64lriscv
